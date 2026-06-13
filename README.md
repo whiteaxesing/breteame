@@ -41,9 +41,15 @@ cp .env.example .env.local
 
 Completá con los valores de **Settings → API** de tu proyecto:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (solo para el script de usuarios; nunca al cliente)
+| Variable                        | Dónde está (Settings → API)                              |
+| ------------------------------- | -------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | **Project URL**                                          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **anon / public** (en proyectos nuevos: *Publishable key*) |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **service_role** (en proyectos nuevos: *Secret key*)     |
+
+> ⚠️ La `service_role` / *Secret key* es de administrador: va **solo** en
+> `.env.local` (ya está en `.gitignore`) y se usa únicamente en
+> `scripts/seed-users.mjs`. Nunca la pongas en código del cliente ni la subas.
 
 ### 4. Cuentas demo
 
@@ -97,6 +103,16 @@ pnpm dev
 
 Al final de `supabase/seed.sql` hay una plantilla `INSERT` comentada. Copiala,
 completá los valores y borrá los datos de prueba.
+
+## Deploy a Vercel
+
+1. Importá el repo en [vercel.com](https://vercel.com) (framework: Next.js, se
+   detecta solo).
+2. En **Settings → Environment Variables** agregá las mismas tres variables del
+   `.env.local`.
+3. Si usás **Google login**, agregá la URL de Vercel a las *Redirect URLs* de
+   Supabase (Auth → URL Configuration) y a las del cliente OAuth de Google:
+   `https://TU-APP.vercel.app/auth/callback`.
 
 ## Estructura
 
