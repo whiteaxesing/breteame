@@ -28,6 +28,10 @@ pnpm install
 2. En el **SQL Editor**, corré en orden:
    - `supabase/migrations/0001_init.sql` (tablas, vistas, RLS, triggers)
    - `supabase/seed.sql` (5 profesionales de prueba + ferreterías)
+
+   > Alternativa automática: agregá `DATABASE_URL` (connection string de
+   > **Settings → Database → Session pooler**) a `.env.local` y corré
+   > `node --env-file=.env.local scripts/run-sql.mjs supabase/migrations/0001_init.sql supabase/seed.sql`.
 3. (Opcional) Auth → Providers → activá **Google** si querés login con Google.
    El login por **email/contraseña** funciona sin configuración extra.
 4. Para que las cuentas demo entren al toque, en Auth → Providers → Email,
