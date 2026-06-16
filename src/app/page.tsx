@@ -75,7 +75,7 @@ export default async function HomePage({
     <main className="flex-1">
       {/* Hero + buscador */}
       <section className="border-b bg-linear-to-b from-primary/5 to-background">
-        <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-14">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
               <ShieldCheck className="size-3.5" /> Profesionales verificados
@@ -90,7 +90,7 @@ export default async function HomePage({
             </p>
           </div>
 
-          <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
+          <div className="mt-5 rounded-xl border bg-card p-3 shadow-sm sm:p-4">
             <Suspense>
               <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} lat={lat} lng={lng} radio={radio} />
             </Suspense>
@@ -99,7 +99,7 @@ export default async function HomePage({
       </section>
 
       {/* Resultados */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-8">
+      <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
         {!isConfigured ? (
           <SetupNotice />
         ) : loadError ? (
