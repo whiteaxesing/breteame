@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { QrCode, ShieldAlert, Store as StoreIcon } from "lucide-react";
+import { QrCode, ShieldAlert, Store as StoreIcon, UserPlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { CategoryChip, PremiumBadge } from "@/components/badges";
 import { VerifyToggle } from "@/components/verify-toggle";
+import { InvitarProfesionalForm } from "@/components/invitar-profesional-form";
+import { DarAccesoDialog } from "@/components/dar-acceso-dialog";
+import { RegenerarAccesoDialog } from "@/components/regenerar-acceso-dialog";
+import { CopiarEnlaceQR } from "@/components/copiar-enlace-qr";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -66,6 +70,21 @@ export default async function AdminPage() {
           </p>
         </div>
 
+        {/* Invitar profesional */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <UserPlus className="size-4" /> Invitar profesional
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Genera un link de acceso único para mandarlo por WhatsApp o correo. Expira en 24 horas.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <InvitarProfesionalForm />
+          </CardContent>
+        </Card>
+
         {/* Profesionales */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -88,6 +107,7 @@ export default async function AdminPage() {
                   <TableHead>Profesional</TableHead>
                   <TableHead>Categoría</TableHead>
                   <TableHead>Premium</TableHead>
+                  <TableHead>Acceso</TableHead>
                   <TableHead className="text-right">Verificado</TableHead>
                 </TableRow>
               </TableHeader>
@@ -113,6 +133,18 @@ export default async function AdminPage() {
                         <PremiumBadge />
                       ) : (
                         <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {pro.user_id ? (
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                            Con acceso
+                          </span>
+                          <RegenerarAccesoDialog professionalId={pro.id} name={pro.name} />
+                        </div>
+                      ) : (
+                        <DarAccesoDialog professionalId={pro.id} name={pro.name} />
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -147,6 +179,7 @@ export default async function AdminPage() {
                   <TableHead>Ferretería</TableHead>
                   <TableHead>Dirección</TableHead>
                   <TableHead>Estado</TableHead>
+                  <TableHead>Enlace QR</TableHead>
                   <TableHead className="text-right">Escaneos QR</TableHead>
                 </TableRow>
               </TableHeader>
@@ -168,6 +201,13 @@ export default async function AdminPage() {
                         </span>
                       )}
                     </TableCell>
+                    <TableCell>
+                      {store.slug ? (
+                        <CopiarEnlaceQR slug={store.slug} />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Sin slug</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right font-semibold tabular-nums">
                       {store.qr_scans}
                     </TableCell>
@@ -181,3 +221,4 @@ export default async function AdminPage() {
     </main>
   );
 }
+
