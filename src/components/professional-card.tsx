@@ -46,9 +46,10 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalResult }) {
             {pro.name}
           </h3>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="size-3.5 shrink-0" /> {pro.location}
+            <MapPin className="size-3.5 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{pro.location}</span>
             {pro.distancia_km !== undefined && (
-              <span className="ml-auto font-medium text-primary">
+              <span className="shrink-0 font-medium text-primary">
                 {pro.distancia_km} km
               </span>
             )}

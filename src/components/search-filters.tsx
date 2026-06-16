@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Locate, MapPin, Search, Shield, X, Zap } from "lucide-react";
+import { ChevronDown, Locate, MapPin, Search, Shield, X, Zap } from "lucide-react";
 import { CATEGORIES, COMING_SOON } from "@/lib/categories";
 import { LOCATION_GROUPS } from "@/lib/locations";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,7 @@ export function SearchFilters({
   const [text, setText] = useState(q ?? "");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   function commit(params: URLSearchParams) {
     const qs = params.toString();
@@ -131,42 +132,59 @@ export function SearchFilters({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map((c) => {
-          const active = category === c.slug;
-          const Icon = c.icon;
-          return (
-            <button
-              key={c.slug}
-              type="button"
-              onClick={() => setParam("category", active ? "" : c.slug)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
-                active
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-input bg-background hover:bg-muted",
-              )}
-            >
-              <Icon className="size-4" /> {c.label}
-            </button>
-          );
-        })}
-        {COMING_SOON.map((c) => {
-          const Icon = c.icon;
-          return (
-            <span
-              key={c.label}
-              className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5 text-sm text-muted-foreground/70"
-              title="Próximamente"
-            >
-              <Icon className="size-4" /> {c.label}
-              <span className="ml-1 text-[10px] uppercase tracking-wide">pronto</span>
-            </span>
-          );
-        })}
+      <div className="pb-2">
+        <div
+          className={cn(
+            "flex flex-wrap gap-2 overflow-hidden pb-1 transition-[max-height] duration-300 ease-in-out",
+            expanded ? "max-h-96" : "max-h-20",
+          )}
+        >
+          {CATEGORIES.map((c) => {
+            const active = category === c.slug;
+            const Icon = c.icon;
+            return (
+              <button
+                key={c.slug}
+                type="button"
+                onClick={() => setParam("category", active ? "" : c.slug)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
+                  active
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input bg-background hover:bg-muted",
+                )}
+              >
+                <Icon className="size-4" /> {c.label}
+              </button>
+            );
+          })}
+          {COMING_SOON.map((c) => {
+            const Icon = c.icon;
+            return (
+              <span
+                key={c.label}
+                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5 text-sm text-muted-foreground/70"
+                title="Próximamente"
+              >
+                <Icon className="size-4" /> {c.label}
+                <span className="ml-1 text-[10px] uppercase tracking-wide">pronto</span>
+              </span>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1.5 flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ChevronDown
+            className={cn("size-3.5 transition-transform duration-300", expanded && "rotate-180")}
+          />
+          {expanded ? "Ver menos" : "Ver más filtros"}
+        </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 border-t pt-3">
         <button
           type="button"
           onClick={() => setParam("emergency", isEmergency ? "" : "1")}
@@ -224,51 +242,53 @@ export function SearchFilters({
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={handleCercaDeMi}
-            disabled={geoLoading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-sm font-medium transition hover:bg-muted disabled:opacity-60"
-          >
-            <Locate className="size-4" />
-            {geoLoading ? "Obteniendo ubicación…" : "Cerca de mí"}
-          </button>
-        )}
-
-        <Select
-          value={location || ALL}
-          onValueChange={(v) => {
-            const params = new URLSearchParams(searchParams.toString());
-            params.delete("lat");
-            params.delete("lng");
-            if (v === ALL) params.delete("location");
-            else params.set("location", v);
-            commit(params);
-          }}
-        >
-          <SelectTrigger className="w-52 bg-background">
-            <MapPin className="size-4 text-muted-foreground" />
-            <SelectValue placeholder="Todos los cantones" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>Todos los cantones</SelectItem>
-            {LOCATION_GROUPS.map((group) => (
-              <SelectGroup key={group.province}>
-                <SelectLabel>{group.province}</SelectLabel>
-                {group.cantones.map((canton) => (
-                  <SelectItem key={canton} value={canton}>
-                    {canton}
-                  </SelectItem>
+          <>
+            <button
+              type="button"
+              onClick={handleCercaDeMi}
+              disabled={geoLoading}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-sm font-medium transition hover:bg-muted disabled:opacity-60"
+            >
+              <Locate className="size-4" />
+              {geoLoading ? "Obteniendo ubicación…" : "Cerca de mí"}
+            </button>
+            <Select
+              value={location || ALL}
+              onValueChange={(v) => {
+                const params = new URLSearchParams(searchParams.toString());
+                params.delete("lat");
+                params.delete("lng");
+                if (v === ALL) params.delete("location");
+                else params.set("location", v);
+                commit(params);
+              }}
+            >
+              <SelectTrigger className="min-w-0 flex-1 bg-background sm:flex-none sm:w-52">
+                <MapPin className="size-4 shrink-0 text-muted-foreground" />
+                <SelectValue placeholder="Todos los cantones" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>Todos los cantones</SelectItem>
+                {LOCATION_GROUPS.map((group) => (
+                  <SelectGroup key={group.province}>
+                    <SelectLabel>{group.province}</SelectLabel>
+                    {group.cantones.map((canton) => (
+                      <SelectItem key={canton} value={canton}>
+                        {canton}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
                 ))}
-              </SelectGroup>
-            ))}
-          </SelectContent>
-        </Select>
+              </SelectContent>
+            </Select>
+          </>
+        )}
 
         {hasFilters && (
           <Button
             variant="ghost"
             size="sm"
+            className="shrink-0"
             onClick={() => {
               setText("");
               commit(new URLSearchParams());
