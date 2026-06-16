@@ -80,12 +80,12 @@ on conflict (id) do nothing;
 -- ----------------------------------------------------------------------------
 -- Ferreterías (para el contador de QR del pitch)
 -- ----------------------------------------------------------------------------
-insert into public.stores (id, name, address, is_partner, qr_scans)
+insert into public.stores (id, name, address, is_partner, qr_scans, slug)
 values
-  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Ferretería El Mar',        'Hatillo, San José',      true,  142),
-  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'Depósito Los Ángeles',     'Heredia Centro',         true,   87),
-  ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'EPA San Sebastián',        'San Sebastián, San José',true,  230),
-  ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Ferretería Central',       'Alajuela Centro',        false,   0)
+  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Ferretería El Mar',        'Hatillo, San José',       true,  142, 'ferreteria-el-mar'),
+  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', 'Depósito Los Ángeles',     'Heredia Centro',          true,   87, 'deposito-los-angeles'),
+  ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'EPA San Sebastián',        'San Sebastián, San José', true,  230, 'epa-san-sebastian'),
+  ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Ferretería Central',       'Alajuela Centro',         false,   0, 'ferreteria-central')
 on conflict (id) do nothing;
 
 -- ----------------------------------------------------------------------------

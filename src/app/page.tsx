@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { SearchX, ShieldCheck, Database } from "lucide-react";
+import { cookies } from "next/headers";
+import { SearchX, ShieldCheck, Database, QrCode } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { isCategorySlug } from "@/lib/categories";
 import { SearchFilters } from "@/components/search-filters";
 import { ProfessionalCard } from "@/components/professional-card";
@@ -29,6 +31,22 @@ export default async function HomePage({
 }) {
   const { category, location, q, emergency, available, lat, lng, radio } = await searchParams;
   const radioKm = Math.min(Math.max(parseFloat(radio ?? "15") || 15, 1), 100);
+
+  // Banner de bienvenida si llegó escaneando un QR de ferretería
+  let storeName: string | null = null;
+  if (isConfigured) {
+    const cookieStore = await cookies();
+    const qrSource = cookieStore.get("qr_source")?.value;
+    if (qrSource) {
+      const admin = createAdminClient();
+      const { data } = await admin
+        .from("stores")
+        .select("name")
+        .eq("slug", qrSource)
+        .single();
+      storeName = data?.name ?? null;
+    }
+  }
 
   let pros: ProfessionalResult[] = [];
   let loadError = false;
@@ -73,6 +91,18 @@ export default async function HomePage({
 
   return (
     <main className="flex-1">
+      {/* Banner QR: visible solo si llegaron escaneando desde una ferretería */}
+      {storeName && (
+        <div className="border-b bg-primary/5 px-4 py-2.5">
+          <div className="mx-auto flex max-w-6xl items-center gap-2 text-sm text-primary">
+            <QrCode className="size-4 shrink-0" />
+            <span>
+              Llegaste desde <strong>{storeName}</strong> — encontrá acá a los profesionales que necesitás.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Hero + buscador */}
       <section className="border-b bg-linear-to-b from-primary/5 to-background">
         <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-14">
