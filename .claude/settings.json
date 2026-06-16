@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(git -C /home/rul/Documents/Work/breteame diff --name-only)",
-      "Bash(git -C /home/rul/Documents/Work/breteame ls-files --others --exclude-standard)",
-      "Bash(git -C /home/rul/Documents/Work/breteame status)"
-    ]
-  }
-}
