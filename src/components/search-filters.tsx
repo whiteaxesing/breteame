@@ -28,6 +28,7 @@ export function SearchFilters({
   available,
   lat,
   lng,
+  radio,
 }: {
   category?: string;
   location?: string;
@@ -36,6 +37,7 @@ export function SearchFilters({
   available?: string;
   lat?: string;
   lng?: string;
+  radio?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -103,6 +105,7 @@ export function SearchFilters({
     const params = new URLSearchParams(searchParams.toString());
     params.delete("lat");
     params.delete("lng");
+    params.delete("radio");
     commit(params);
   }
 
@@ -192,13 +195,34 @@ export function SearchFilters({
 
       <div className="flex flex-wrap items-center gap-2">
         {isNear ? (
-          <button
-            type="button"
-            onClick={clearCercaDeMi}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition"
-          >
-            <Locate className="size-4" /> Cerca de mí <X className="size-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
+              <Locate className="size-4" /> Cerca de mí
+            </span>
+            <Select
+              value={radio ?? "15"}
+              onValueChange={(v) => setParam("radio", v)}
+            >
+              <SelectTrigger className="h-9 w-24 rounded-full bg-background text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 15, 25, 50].map((km) => (
+                  <SelectItem key={km} value={String(km)}>
+                    {km} km
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <button
+              type="button"
+              onClick={clearCercaDeMi}
+              className="flex size-9 items-center justify-center rounded-full border border-input bg-background text-muted-foreground transition hover:bg-muted"
+              aria-label="Quitar filtro de ubicación"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         ) : (
           <button
             type="button"

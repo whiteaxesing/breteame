@@ -24,9 +24,11 @@ export default async function HomePage({
     available?: string;
     lat?: string;
     lng?: string;
+    radio?: string;
   }>;
 }) {
-  const { category, location, q, emergency, available, lat, lng } = await searchParams;
+  const { category, location, q, emergency, available, lat, lng, radio } = await searchParams;
+  const radioKm = Math.min(Math.max(parseFloat(radio ?? "15") || 15, 1), 100);
 
   let pros: ProfessionalResult[] = [];
   let loadError = false;
@@ -40,7 +42,7 @@ export default async function HomePage({
     if (!isNaN(_lat) && !isNaN(_lng)) {
       // Búsqueda por proximidad via PostGIS RPC.
       cercaDe = true;
-      let query = supabase.rpc("profesionales_cerca", { _lat, _lng, _radio_km: 15 });
+      let query = supabase.rpc("profesionales_cerca", { _lat, _lng, _radio_km: radioKm });
       if (isCategorySlug(category)) query = query.eq("category", category);
       if (emergency === "1") query = query.eq("is_emergency", true);
       if (available === "1") query = query.eq("is_available_now", true);
@@ -90,7 +92,7 @@ export default async function HomePage({
 
           <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
             <Suspense>
-              <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} lat={lat} lng={lng} />
+              <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} lat={lat} lng={lng} radio={radio} />
             </Suspense>
           </div>
         </div>
@@ -116,7 +118,7 @@ export default async function HomePage({
           <>
             <p className="mb-4 text-sm text-muted-foreground">
               {pros.length} profesional{pros.length === 1 ? "" : "es"}
-              {cercaDe ? " a menos de 15 km" : " disponible" + (pros.length === 1 ? "" : "s")}
+              {cercaDe ? ` a menos de ${radioKm} km` : " disponible" + (pros.length === 1 ? "" : "s")}
             </p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pros.map((pro) => (
