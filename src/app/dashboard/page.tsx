@@ -4,6 +4,7 @@ import { Inbox, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { PremiumToggle } from "@/components/premium-toggle";
+import { CambiarCorreoForm } from "@/components/cambiar-correo-form";
 import { LeadStatusSelect } from "@/components/lead-status-select";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
       <Notice
         icon={<ShieldAlert className="size-8 text-muted-foreground" />}
         title="Todavía no tenés un perfil profesional"
-        description="Pedile al admin que vincule tu cuenta con un perfil para empezar a recibir leads."
+        description="Pedile al administrador que vincule tu cuenta con tu perfil para empezar a recibir contactos de clientes."
       />
     );
   }
@@ -87,19 +88,24 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
-          <Stat label="Leads totales" value={leads.length} />
+          <Stat label="Clientes recibidos" value={leads.length} />
           <Stat label="Sin atender" value={nuevos} highlight={nuevos > 0} />
         </div>
 
         <PremiumToggle professionalId={pro.id} initial={pro.is_premium} />
 
+        <Card className="space-y-2 p-5">
+          <h2 className="font-semibold">Mi correo electrónico</h2>
+          <CambiarCorreoForm currentEmail={session.user.email} />
+        </Card>
+
         <Card className="overflow-hidden p-0">
           {leads.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-14 text-center">
               <Inbox className="size-8 text-muted-foreground" />
-              <p className="font-medium">Todavía no tenés leads</p>
+              <p className="font-medium">Todavía nadie te ha contactado</p>
               <p className="max-w-xs text-sm text-muted-foreground">
-                Cuando un cliente te contacte desde tu perfil, vas a verlo acá.
+                Cuando un cliente te llame o escriba por WhatsApp desde tu perfil, aparece acá.
               </p>
               <Button asChild variant="outline" size="sm" className="mt-1">
                 <Link href={`/pro/${pro.id}`}>Ver mi perfil público</Link>
@@ -110,9 +116,9 @@ export default async function DashboardPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Canal</TableHead>
+                  <TableHead>Cómo contactó</TableHead>
                   <TableHead>Fecha</TableHead>
-                  <TableHead className="text-right">Estado</TableHead>
+                  <TableHead className="text-right">¿Cómo quedó?</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

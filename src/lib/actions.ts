@@ -1,10 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import type { ContactChannel, ContactStatus } from "@/lib/types";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { ContactChannel, ContactStatus, CategorySlug } from "@/lib/types";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
+type ActionResultWithLink = { ok: true; link: string } | { ok: false; error: string };
+
+async function acortarUrl(longUrl: string): Promise<string> {
+  const code = Math.random().toString(36).slice(2, 8);
+  const admin = createAdminClient();
+  await admin.from("short_links").insert({ code, url: longUrl });
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001";
+  return `${base}/r/${code}`;
+}
 
 /**
  * Registra un lead cuando un cliente logueado hace click en contactar.
@@ -32,11 +43,15 @@ export async function registrarContacto(
 
   const clientName = profile?.full_name ?? user.email ?? "Cliente";
 
+  const cookieStore = await cookies();
+  const qrSource = cookieStore.get("qr_source")?.value ?? null;
+
   const { error } = await supabase.from("contacts").insert({
     professional_id: professionalId,
     client_id: user.id,
     client_name: clientName,
     channel,
+    qr_source: qrSource,
   });
 
   if (error) return { ok: false, error: error.message };
@@ -73,6 +88,204 @@ export async function togglePremium(
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard");
   revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * Admin: crea cuenta a un profesional nuevo y devuelve el link de acceso.
+ * El admin lo manda por WhatsApp/correo como prefiera. Link de un solo uso.
+ */
+export async function invitarProfesional(
+  email: string,
+  name: string,
+  category: CategorySlug,
+  phone: string,
+): Promise<ActionResultWithLink> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role !== "admin") return { ok: false, error: "Acción reservada para admins." };
+
+  const admin = createAdminClient();
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "invite",
+    email,
+  });
+  if (linkError) return { ok: false, error: linkError.message };
+
+  const userId = linkData.user.id;
+  const link = linkData.properties.action_link;
+
+  await admin
+    .from("profiles")
+    .upsert({ id: userId, role: "profesional", full_name: name });
+
+  const { error: proError } = await admin.from("professionals").insert({
+    user_id: userId,
+    name,
+    category,
+    phone,
+    location: "",
+  });
+
+  if (proError) return { ok: false, error: proError.message };
+
+  revalidatePath("/admin");
+  return { ok: true, link: await acortarUrl(link) };
+}
+
+/**
+ * Admin: da acceso a un profesional ya existente en la BD (sin user_id).
+ * Genera el link de acceso para mandarlo por WhatsApp o donde sea. Link de un solo uso.
+ */
+/**
+ * Admin: da acceso a un profesional ya existente en la BD (sin user_id).
+ * Genera un correo interno de placeholder para no pedirle nada al admin.
+ * El profesional puede actualizar su correo desde su panel.
+ */
+export async function darAccesoProfesional(
+  professionalId: string,
+  name: string,
+): Promise<ActionResultWithLink> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role !== "admin") return { ok: false, error: "Acción reservada para admins." };
+
+  const admin = createAdminClient();
+
+  const placeholderEmail = `pro-${professionalId}@breteame.internal`;
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "invite",
+    email: placeholderEmail,
+  });
+  if (linkError) return { ok: false, error: linkError.message };
+
+  const userId = linkData.user.id;
+  const link = linkData.properties.action_link;
+
+  await admin
+    .from("profiles")
+    .upsert({ id: userId, role: "profesional", full_name: name });
+
+  const { error: proError } = await admin
+    .from("professionals")
+    .update({ user_id: userId })
+    .eq("id", professionalId);
+
+  if (proError) return { ok: false, error: proError.message };
+
+  revalidatePath("/admin");
+  return { ok: true, link: await acortarUrl(link) };
+}
+
+/** Admin: regenera un link de acceso para un profesional que ya tiene cuenta. */
+export async function regenerarAcceso(professionalId: string): Promise<ActionResultWithLink> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "No autenticado." };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role !== "admin") return { ok: false, error: "Acción reservada para admins." };
+
+  const admin = createAdminClient();
+  const placeholderEmail = `pro-${professionalId}@breteame.internal`;
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email: placeholderEmail,
+  });
+  if (linkError) return { ok: false, error: linkError.message };
+
+  return { ok: true, link: await acortarUrl(linkData.properties.action_link) };
+}
+
+/**
+ * Página pública /unirse: registra un profesional sin cuenta.
+ * Usa el cliente admin para saltarse RLS (user_id queda null hasta que el admin le dé acceso).
+ */
+export async function registrarProfesionalPublico(
+  name: string,
+  phone: string,
+  category: CategorySlug,
+  location: string,
+  description: string,
+  honeypot: string,
+): Promise<ActionResult> {
+  // Honeypot: si viene con datos es un bot
+  if (honeypot) return { ok: true };
+
+  if (!name.trim() || !phone.trim()) {
+    return { ok: false, error: "Nombre y teléfono son obligatorios." };
+  }
+
+  const admin = createAdminClient();
+
+  // Rate limit: máximo 10 registros por minuto en toda la plataforma
+  const hace1min = new Date(Date.now() - 60_000).toISOString();
+  const { count } = await admin
+    .from("professionals")
+    .select("id", { count: "exact", head: true })
+    .is("user_id", null)
+    .gte("created_at", hace1min);
+
+  if ((count ?? 0) >= 10) {
+    return { ok: false, error: "Demasiados registros en este momento. Intentá de nuevo en unos minutos." };
+  }
+
+  // Teléfono único: evita duplicados del mismo profesional
+  const { data: existing } = await admin
+    .from("professionals")
+    .select("id")
+    .eq("phone", phone.trim())
+    .limit(1)
+    .single();
+
+  if (existing) {
+    return { ok: false, error: "Ese número de teléfono ya está registrado." };
+  }
+
+  const { error } = await admin.from("professionals").insert({
+    name: name.trim(),
+    phone: phone.trim(),
+    category,
+    location: location.trim(),
+    description: description.trim() || null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** Dashboard del profesional: solicita cambio de correo. Supabase manda confirmación al nuevo correo. */
+export async function cambiarCorreo(newEmail: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ email: newEmail });
+  if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
 
