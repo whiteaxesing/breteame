@@ -16,9 +16,9 @@ const isConfigured =
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; location?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; location?: string; q?: string; emergency?: string; available?: string }>;
 }) {
-  const { category, location, q } = await searchParams;
+  const { category, location, q, emergency, available } = await searchParams;
 
   let pros: ProfessionalPublic[] = [];
   let loadError = false;
@@ -29,6 +29,8 @@ export default async function HomePage({
 
     if (isCategorySlug(category)) query = query.eq("category", category);
     if (location) query = query.ilike("location", `%${location}%`);
+    if (emergency === "1") query = query.eq("is_emergency", true);
+    if (available === "1") query = query.eq("is_available_now", true);
 
     const cleanQ = q?.replace(/[,()]/g, " ").trim();
     if (cleanQ) {
@@ -49,7 +51,7 @@ export default async function HomePage({
   return (
     <main className="flex-1">
       {/* Hero + buscador */}
-      <section className="border-b bg-gradient-to-b from-primary/5 to-background">
+      <section className="border-b bg-linear-to-b from-primary/5 to-background">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:py-14">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
@@ -67,7 +69,7 @@ export default async function HomePage({
 
           <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
             <Suspense>
-              <SearchFilters category={category} location={location} q={q} />
+              <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} />
             </Suspense>
           </div>
         </div>

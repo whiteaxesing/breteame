@@ -22,6 +22,7 @@ if (files.length === 0) {
 const client = new pg.Client({
   connectionString: url,
   ssl: { rejectUnauthorized: false }, // Supabase usa SSL
+  family: 4, // fuerza IPv4 (IPv6 puede no estar disponible en la red local)
 });
 
 await client.connect();

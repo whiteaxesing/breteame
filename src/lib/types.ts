@@ -31,6 +31,9 @@ export type ProfessionalPublic = {
   image_url: string | null;
   portfolio_urls: string[];
   created_at: string;
+  is_test: boolean;
+  is_emergency: boolean;
+  is_available_now: boolean;
 };
 
 // Vista professionals_with_contact: incluye phone (solo autenticados).

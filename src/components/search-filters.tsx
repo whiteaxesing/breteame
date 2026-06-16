@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Search, X } from "lucide-react";
+import { MapPin, Search, Shield, X, Zap } from "lucide-react";
 import { CATEGORIES, COMING_SOON } from "@/lib/categories";
 import { LOCATIONS } from "@/lib/locations";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,14 @@ export function SearchFilters({
   category,
   location,
   q,
+  emergency,
+  available,
 }: {
   category?: string;
   location?: string;
   q?: string;
+  emergency?: string;
+  available?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -58,7 +62,9 @@ export function SearchFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
-  const hasFilters = !!category || !!location || !!q;
+  const isEmergency = emergency === "1";
+  const isAvailable = available === "1";
+  const hasFilters = !!category || !!location || !!q || isEmergency || isAvailable;
 
   return (
     <div className="space-y-3">
@@ -115,6 +121,33 @@ export function SearchFilters({
             </span>
           );
         })}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setParam("emergency", isEmergency ? "" : "1")}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
+            isEmergency
+              ? "border-red-600 bg-red-600 text-white"
+              : "border-input bg-background hover:bg-muted",
+          )}
+        >
+          <Zap className={cn("size-4", isEmergency && "fill-current")} /> Emergencia 24/7
+        </button>
+        <button
+          type="button"
+          onClick={() => setParam("available", isAvailable ? "" : "1")}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
+            isAvailable
+              ? "border-emerald-600 bg-emerald-600 text-white"
+              : "border-input bg-background hover:bg-muted",
+          )}
+        >
+          <Shield className={cn("size-4", isAvailable && "fill-current")} /> Disponible ahora
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

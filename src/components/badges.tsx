@@ -1,4 +1,4 @@
-import { BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, Circle, Star, Zap } from "lucide-react";
 import { getCategory } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import type { CategorySlug } from "@/lib/types";
@@ -48,6 +48,32 @@ export function CategoryChip({
       )}
     >
       <Icon className="size-3" /> {cat.label}
+    </span>
+  );
+}
+
+export function EmergencyBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-xs font-medium text-white",
+        className,
+      )}
+    >
+      <Zap className="size-3.5 fill-current" /> 24/7
+    </span>
+  );
+}
+
+export function AvailableNowBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white",
+        className,
+      )}
+    >
+      <Circle className="size-2 fill-current" /> Disponible
     </span>
   );
 }

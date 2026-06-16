@@ -3,7 +3,9 @@ import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import {
+  AvailableNowBadge,
   CategoryChip,
+  EmergencyBadge,
   PremiumBadge,
   RatingStars,
   VerifiedBadge,
@@ -27,8 +29,9 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalPublic }) {
             category={pro.category}
             className="h-40 w-full rounded-none text-5xl"
           />
-          <div className="absolute left-2 top-2 flex gap-1">
+          <div className="absolute left-2 top-2 flex flex-col gap-1">
             {pro.is_verified && <VerifiedBadge />}
+            {pro.is_emergency && <EmergencyBadge />}
           </div>
           {pro.is_premium && (
             <div className="absolute right-2 top-2">
@@ -45,6 +48,7 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalPublic }) {
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="size-3.5 shrink-0" /> {pro.location}
           </p>
+          {pro.is_available_now && <AvailableNowBadge className="w-fit" />}
           {pro.description && (
             <p className="line-clamp-2 text-sm text-muted-foreground">
               {pro.description}
