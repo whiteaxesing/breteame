@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
@@ -27,11 +28,14 @@ export default function RootLayout({
     <html
       lang="es"
       className={cn("h-full", "antialiased", geistMono.variable, "font-sans", geist.variable)}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background">
-        <SiteHeader />
-        <div className="flex-1 flex flex-col">{children}</div>
-        <Toaster richColors position="top-center" />
+        <ThemeProvider>
+          <SiteHeader />
+          <div className="flex-1 flex flex-col">{children}</div>
+          <Toaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   );

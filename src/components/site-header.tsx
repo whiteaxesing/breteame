@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wrench } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 
 export async function SiteHeader() {
@@ -17,17 +18,20 @@ export async function SiteHeader() {
           <span className="text-lg font-bold tracking-tight">Breteame</span>
         </Link>
 
-        {session ? (
-          <UserMenu
-            email={session.user.email ?? ""}
-            fullName={session.profile?.full_name ?? null}
-            role={session.profile?.role ?? "cliente"}
-          />
-        ) : (
-          <Button asChild size="sm">
-            <Link href="/login">Iniciá sesión</Link>
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          {session ? (
+            <UserMenu
+              email={session.user.email ?? ""}
+              fullName={session.profile?.full_name ?? null}
+              role={session.profile?.role ?? "cliente"}
+            />
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/login">Iniciá sesión</Link>
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );
