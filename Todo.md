@@ -6,7 +6,7 @@
 - [ ] Profesionista: Poder cambiar el correo electrónico
 
 ## Home / Búsqueda
-- [ ] Que se vea bien en el celular de verdad (la mayoría va a buscar desde el cel)
+- [x] Que se vea bien en el celular de verdad (la mayoría va a buscar desde el cel)
 - [x] Filtro "Emergencia 24/7" / "Disponible ahora" (fontanero o cerrajero a medianoche = el caso estrella)
 - [x] Geolocalizac2ión / "cerca de mí" y filtro por cantón más fino
 - [x] Más datos de prueba para que el demo se vea poblado, no 5 tarjetas
