@@ -1,9 +1,9 @@
 ## Auth / Registro
-- [ ] Agregar Login con Google
-- [ ] Formulario de Registro para clientes
-- [ ] Mandar correo de confirmación de registro
-- [ ] Magic Links para darle acceso a los profesionales con cuentas que yo haya creado
-- [ ] Profesionista: Poder cambiar el correo electrónico
+- [x] Agregar Login con Google
+- [x] Formulario de Registro para clientes
+- [x] Mandar correo de confirmación de registro
+- [x] Magic Links para darle acceso a los profesionales con cuentas que yo haya creado
+- [x] Profesionista: Poder cambiar el correo electrónico
 
 ## Home / Búsqueda
 - [x] Que se vea bien en el celular de verdad (la mayoría va a buscar desde el cel)
@@ -39,9 +39,16 @@
 - [ ] Métricas globales de la plataforma (usuarios, contactos, ferreterías) para el pitch
 
 ## Ferreterías / QR
-- [ ] QRs de ferreterías
-- [ ] Landing por ferretería al escanear el QR, que registre de dónde vino el cliente (atribución, no solo el contador)
+- [x] QRs de ferreterías — `/f/[slug]` registra el escaneo, pone cookie de atribución y redirige al home
+- [x] Landing por ferretería al escanear el QR, que registre de dónde vino el cliente (atribución, no solo el contador) — `qr_events` tabla + `contacts.qr_source` + banner en home + "Copiar enlace" en admin
 
 ## Infraestructura / Pulido
 - [ ] Estados de carga y manejo de errores en todas las pantallas
 - [ ] PWA: "Agregar a la pantalla de inicio" como si fuera una app
+
+## Seguridad / Post-hackathon
+- [ ] Agregar Cloudflare Turnstile en `/unirse` y en el registro de `/login` para reemplazar los honeypots — protección real contra bots y scripts automatizados
+
+## Deuda técnica / Post-hackathon
+- [ ] Cambiar el sender de correos de `onboarding@resend.dev` a un dominio propio (comprar dominio → verificar en Resend → actualizar SMTP en Supabase)
+- [ ] Configurar SMTP propio (Resend con dominio verificado) para subir el límite de correos — el plan free de Supabase solo permite 4 por hora, inaceptable en producción

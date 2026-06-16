@@ -62,5 +62,6 @@ export type Store = {
   address: string | null;
   is_partner: boolean;
   qr_scans: number;
+  slug: string | null;
   created_at: string;
 };
