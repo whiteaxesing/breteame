@@ -29,11 +29,16 @@ export function VerifyToggle({
   }
 
   return (
-    <Switch
-      checked={on}
-      onCheckedChange={onChange}
-      disabled={pending}
-      aria-label="Verificar profesional"
-    />
+    <div className="flex items-center gap-2">
+      <Switch
+        checked={on}
+        onCheckedChange={onChange}
+        disabled={pending}
+        aria-label="Verificar profesional"
+      />
+      <span className={`text-xs font-medium ${on ? "text-green-600" : "text-muted-foreground"}`}>
+        {on ? "Verificado" : "Sin verificar"}
+      </span>
+    </div>
   );
 }
