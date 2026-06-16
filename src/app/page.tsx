@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isCategorySlug } from "@/lib/categories";
 import { SearchFilters } from "@/components/search-filters";
 import { ProfessionalCard } from "@/components/professional-card";
-import type { ProfessionalPublic } from "@/lib/types";
+import type { ProfessionalResult } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,36 +16,57 @@ const isConfigured =
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; location?: string; q?: string; emergency?: string; available?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    location?: string;
+    q?: string;
+    emergency?: string;
+    available?: string;
+    lat?: string;
+    lng?: string;
+  }>;
 }) {
-  const { category, location, q, emergency, available } = await searchParams;
+  const { category, location, q, emergency, available, lat, lng } = await searchParams;
 
-  let pros: ProfessionalPublic[] = [];
+  let pros: ProfessionalResult[] = [];
   let loadError = false;
+  let cercaDe = false;
 
   if (isConfigured) {
     const supabase = await createClient();
-    let query = supabase.from("professionals_public").select("*");
+    const _lat = lat ? parseFloat(lat) : NaN;
+    const _lng = lng ? parseFloat(lng) : NaN;
 
-    if (isCategorySlug(category)) query = query.eq("category", category);
-    if (location) query = query.ilike("location", `%${location}%`);
-    if (emergency === "1") query = query.eq("is_emergency", true);
-    if (available === "1") query = query.eq("is_available_now", true);
-
-    const cleanQ = q?.replace(/[,()]/g, " ").trim();
-    if (cleanQ) {
-      query = query.or(`name.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`);
+    if (!isNaN(_lat) && !isNaN(_lng)) {
+      // Búsqueda por proximidad via PostGIS RPC.
+      cercaDe = true;
+      let query = supabase.rpc("profesionales_cerca", { _lat, _lng, _radio_km: 15 });
+      if (isCategorySlug(category)) query = query.eq("category", category);
+      if (emergency === "1") query = query.eq("is_emergency", true);
+      if (available === "1") query = query.eq("is_available_now", true);
+      const cleanQ = q?.replace(/[,()]/g, " ").trim();
+      if (cleanQ) query = query.or(`name.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`);
+      const { data, error } = await query;
+      if (error) loadError = true;
+      pros = (data ?? []) as ProfessionalResult[];
+    } else {
+      // Búsqueda estándar por filtros.
+      let query = supabase.from("professionals_public").select("*");
+      if (isCategorySlug(category)) query = query.eq("category", category);
+      if (location) query = query.ilike("location", `%${location}%`);
+      if (emergency === "1") query = query.eq("is_emergency", true);
+      if (available === "1") query = query.eq("is_available_now", true);
+      const cleanQ = q?.replace(/[,()]/g, " ").trim();
+      if (cleanQ) query = query.or(`name.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`);
+      query = query
+        .order("is_premium", { ascending: false })
+        .order("is_verified", { ascending: false })
+        .order("rating", { ascending: false })
+        .order("created_at", { ascending: false });
+      const { data, error } = await query;
+      if (error) loadError = true;
+      pros = (data ?? []) as ProfessionalResult[];
     }
-
-    query = query
-      .order("is_premium", { ascending: false })
-      .order("is_verified", { ascending: false })
-      .order("rating", { ascending: false })
-      .order("created_at", { ascending: false });
-
-    const { data, error } = await query;
-    if (error) loadError = true;
-    pros = (data ?? []) as ProfessionalPublic[];
   }
 
   return (
@@ -69,7 +90,7 @@ export default async function HomePage({
 
           <div className="mt-6 rounded-xl border bg-card p-4 shadow-sm">
             <Suspense>
-              <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} />
+              <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} lat={lat} lng={lng} />
             </Suspense>
           </div>
         </div>
@@ -94,8 +115,8 @@ export default async function HomePage({
         ) : (
           <>
             <p className="mb-4 text-sm text-muted-foreground">
-              {pros.length} profesional{pros.length === 1 ? "" : "es"} disponible
-              {pros.length === 1 ? "" : "s"}
+              {pros.length} profesional{pros.length === 1 ? "" : "es"}
+              {cercaDe ? " a menos de 15 km" : " disponible" + (pros.length === 1 ? "" : "s")}
             </p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pros.map((pro) => (

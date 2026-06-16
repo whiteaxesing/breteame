@@ -34,7 +34,12 @@ export type ProfessionalPublic = {
   is_test: boolean;
   is_emergency: boolean;
   is_available_now: boolean;
+  lat: number | null;
+  lng: number | null;
 };
+
+// Resultado de profesionales_cerca(): incluye distancia calculada por PostGIS.
+export type ProfessionalResult = ProfessionalPublic & { distancia_km?: number };
 
 // Vista professionals_with_contact: incluye phone (solo autenticados).
 export type ProfessionalWithContact = ProfessionalPublic & {
