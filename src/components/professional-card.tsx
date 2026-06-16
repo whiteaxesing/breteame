@@ -11,9 +11,9 @@ import {
   VerifiedBadge,
 } from "@/components/badges";
 import { cn } from "@/lib/utils";
-import type { ProfessionalPublic } from "@/lib/types";
+import type { ProfessionalResult } from "@/lib/types";
 
-export function ProfessionalCard({ pro }: { pro: ProfessionalPublic }) {
+export function ProfessionalCard({ pro }: { pro: ProfessionalResult }) {
   return (
     <Link href={`/pro/${pro.id}`} className="group block">
       <Card
@@ -47,6 +47,11 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalPublic }) {
           </h3>
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="size-3.5 shrink-0" /> {pro.location}
+            {pro.distancia_km !== undefined && (
+              <span className="ml-auto font-medium text-primary">
+                {pro.distancia_km} km
+              </span>
+            )}
           </p>
           {pro.is_available_now && <AvailableNowBadge className="w-fit" />}
           {pro.description && (

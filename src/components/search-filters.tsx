@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MapPin, Search, Shield, X, Zap } from "lucide-react";
+import { Locate, MapPin, Search, Shield, X, Zap } from "lucide-react";
 import { CATEGORIES, COMING_SOON } from "@/lib/categories";
-import { LOCATIONS } from "@/lib/locations";
+import { LOCATION_GROUPS } from "@/lib/locations";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -24,17 +26,23 @@ export function SearchFilters({
   q,
   emergency,
   available,
+  lat,
+  lng,
 }: {
   category?: string;
   location?: string;
   q?: string;
   emergency?: string;
   available?: string;
+  lat?: string;
+  lng?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [text, setText] = useState(q ?? "");
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   function commit(params: URLSearchParams) {
     const qs = params.toString();
@@ -64,7 +72,39 @@ export function SearchFilters({
 
   const isEmergency = emergency === "1";
   const isAvailable = available === "1";
-  const hasFilters = !!category || !!location || !!q || isEmergency || isAvailable;
+  const isNear = !!lat && !!lng;
+  const hasFilters = !!category || !!location || !!q || isEmergency || isAvailable || isNear;
+
+  function handleCercaDeMi() {
+    if (!navigator.geolocation) {
+      setGeoError("Tu navegador no soporta geolocalización.");
+      return;
+    }
+    setGeoLoading(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("lat", String(pos.coords.latitude));
+        params.set("lng", String(pos.coords.longitude));
+        params.delete("location"); // mutuamente excluyente con cantón
+        commit(params);
+        setGeoLoading(false);
+      },
+      () => {
+        setGeoError("No se pudo obtener tu ubicación. Verificá los permisos.");
+        setGeoLoading(false);
+      },
+      { timeout: 8000 },
+    );
+  }
+
+  function clearCercaDeMi() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("lat");
+    params.delete("lng");
+    commit(params);
+  }
 
   return (
     <div className="space-y-3">
@@ -151,20 +191,52 @@ export function SearchFilters({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        {isNear ? (
+          <button
+            type="button"
+            onClick={clearCercaDeMi}
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition"
+          >
+            <Locate className="size-4" /> Cerca de mí <X className="size-3.5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleCercaDeMi}
+            disabled={geoLoading}
+            className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-sm font-medium transition hover:bg-muted disabled:opacity-60"
+          >
+            <Locate className="size-4" />
+            {geoLoading ? "Obteniendo ubicación…" : "Cerca de mí"}
+          </button>
+        )}
+
         <Select
           value={location || ALL}
-          onValueChange={(v) => setParam("location", v === ALL ? "" : v)}
+          onValueChange={(v) => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("lat");
+            params.delete("lng");
+            if (v === ALL) params.delete("location");
+            else params.set("location", v);
+            commit(params);
+          }}
         >
-          <SelectTrigger className="w-56 bg-background">
+          <SelectTrigger className="w-52 bg-background">
             <MapPin className="size-4 text-muted-foreground" />
-            <SelectValue placeholder="Todas las zonas" />
+            <SelectValue placeholder="Todos los cantones" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>Todas las zonas</SelectItem>
-            {LOCATIONS.map((loc) => (
-              <SelectItem key={loc} value={loc}>
-                {loc}
-              </SelectItem>
+            <SelectItem value={ALL}>Todos los cantones</SelectItem>
+            {LOCATION_GROUPS.map((group) => (
+              <SelectGroup key={group.province}>
+                <SelectLabel>{group.province}</SelectLabel>
+                {group.cantones.map((canton) => (
+                  <SelectItem key={canton} value={canton}>
+                    {canton}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
@@ -182,6 +254,10 @@ export function SearchFilters({
           </Button>
         )}
       </div>
+
+      {geoError && (
+        <p className="text-xs text-destructive">{geoError}</p>
+      )}
     </div>
   );
 }
