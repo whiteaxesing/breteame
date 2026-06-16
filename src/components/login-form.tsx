@@ -30,6 +30,7 @@ export function LoginForm({ next }: { next: string }) {
   const [mode, setMode] = useState<Mode>("signin");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +48,12 @@ export function LoginForm({ next }: { next: string }) {
     setInfo(null);
 
     const supabase = createClient();
+
+    if (mode === "signup" && confirmEmail) {
+      // Bot detectado — fingir éxito sin hacer nada
+      setLoading(false);
+      return;
+    }
 
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -147,6 +154,17 @@ export function LoginForm({ next }: { next: string }) {
               required
             />
           </div>
+          {mode === "signup" && (
+            <input
+              type="email"
+              name="email_confirm"
+              value={confirmEmail}
+              onChange={(e) => setConfirmEmail(e.target.value)}
+              tabIndex={-1}
+              aria-hidden="true"
+              style={{ position: "absolute", left: "-9999px" }}
+            />
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="password">Contraseña</Label>
             <Input
@@ -176,6 +194,7 @@ export function LoginForm({ next }: { next: string }) {
             className="font-medium text-primary underline-offset-4 hover:underline"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
+              setConfirmEmail("");
               setError(null);
               setInfo(null);
             }}

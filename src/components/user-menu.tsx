@@ -56,7 +56,7 @@ export function UserMenu({
         {role === "profesional" && (
           <DropdownMenuItem asChild>
             <Link href="/dashboard">
-              <LayoutDashboard /> Mi panel de leads
+              <LayoutDashboard /> Mis contactos
             </Link>
           </DropdownMenuItem>
         )}

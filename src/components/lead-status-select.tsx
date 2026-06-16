@@ -13,9 +13,9 @@ import {
 import type { ContactStatus } from "@/lib/types";
 
 const STATUSES: { value: ContactStatus; label: string }[] = [
-  { value: "nuevo", label: "Nuevo" },
-  { value: "contactado", label: "Contactado" },
-  { value: "cerrado", label: "Cerrado" },
+  { value: "nuevo", label: "Sin atender" },
+  { value: "contactado", label: "Ya lo atendí" },
+  { value: "cerrado", label: "Trabajo cerrado" },
 ];
 
 export function LeadStatusSelect({
