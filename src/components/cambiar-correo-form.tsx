@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cambiarCorreo } from "@/lib/actions";
 
 export function CambiarCorreoForm({ currentEmail }: { currentEmail: string | undefined }) {
@@ -45,7 +44,7 @@ export function CambiarCorreoForm({ currentEmail }: { currentEmail: string | und
       )}
       {isPlaceholder && (
         <p className="text-sm text-amber-600">
-          Todavía no tenés un correo configurado. Agregá uno para poder entrar con contraseña.
+          Todavía no agregaste tu correo. Agregalo para poder entrar a tu cuenta cuando querás.
         </p>
       )}
       <form onSubmit={handleSubmit} className="flex gap-2">
