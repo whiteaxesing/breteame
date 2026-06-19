@@ -27,9 +27,9 @@
 - [ ] Avisarle al profesional cuando lo contactan (WhatsApp o correo), para que no tenga que entrar al panel a revisar
 
 ## Cuenta del Cliente
-- [ ] Cuenta Cliente no sirve para nada — darle funcionalidad real
+- [x] Cuenta Cliente no sirve para nada — darle funcionalidad real
 - [x] Historial de servicios / profesionales contactados
-- [ ] Profesionales guardados
+- [x] Profesionales guardados
 - [x] Mis reseñas
 - [x] Información personal (editar nombre, foto) (nombre listo; foto queda para la tarea de Supabase Storage)
 

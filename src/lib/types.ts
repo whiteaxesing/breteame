@@ -66,6 +66,12 @@ export type Review = {
   created_at: string;
 };
 
+export type SavedProfessional = {
+  client_id: string;
+  professional_id: string;
+  created_at: string;
+};
+
 export type ProfileView = {
   id: string;
   professional_id: string;

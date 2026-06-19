@@ -14,6 +14,7 @@ import { ContactButtons } from "@/components/contact-buttons";
 import { ReviewList } from "@/components/review-list";
 import { ReviewForm } from "@/components/review-form";
 import { RegistrarVista } from "@/components/registrar-vista";
+import { GuardarButton } from "@/components/guardar-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ProfessionalWithContact, Review } from "@/lib/types";
@@ -48,6 +49,19 @@ export default async function ProfilePage({
 
   // ¿El que mira es el dueño de este anuncio? No tiene sentido que se contacte solo.
   const isOwner = !!session && session.user.id === pro.user_id;
+
+  // Solo un cliente puede guardar profesionales. Consultamos si ya lo guardó.
+  const puedeGuardar = session?.profile?.role === "cliente";
+  let guardadoInicial = false;
+  if (puedeGuardar) {
+    const { data: saved } = await supabase
+      .from("saved_professionals")
+      .select("professional_id")
+      .eq("client_id", session.user.id)
+      .eq("professional_id", id)
+      .maybeSingle();
+    guardadoInicial = !!saved;
+  }
 
   // Reseñas: visibles para todos.
   const { data: reviewsData } = await supabase
@@ -125,6 +139,13 @@ export default async function ProfilePage({
                     </p>
                   )}
                 </div>
+                {puedeGuardar && (
+                  <GuardarButton
+                    professionalId={pro.id}
+                    initialSaved={guardadoInicial}
+                    className="shrink-0 sm:ml-auto"
+                  />
+                )}
               </CardContent>
             </Card>
 
