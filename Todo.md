@@ -23,7 +23,7 @@
 - [x] Profesionista: Editar mi anuncio, mi información personal
 - [x] Poder cambiar el nombre de la empresa, el logo, la descripción, imágenes, trabajos recientes (texto/disponibilidad listo; **logo + imágenes quedan para la tarea de Supabase Storage**)
 - [x] Métricas: "tu anuncio se vio X veces, te contactaron Y este mes" (esto justifica pagar Premium)
-- [ ] Checkout Premium simulado: un modal de pago "aquí iría Stripe", no solo el toggle
+- [x] Checkout Premium simulado: un modal de pago "aquí iría Stripe", no solo el toggle
 - [ ] Avisarle al profesional cuando lo contactan (WhatsApp o correo), para que no tenga que entrar al panel a revisar
 
 ## Cuenta del Cliente
