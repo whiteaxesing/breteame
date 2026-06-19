@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Inbox, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
-import { PremiumToggle } from "@/components/premium-toggle";
+import { PremiumCheckout } from "@/components/premium-checkout";
 import { CambiarCorreoForm } from "@/components/cambiar-correo-form";
 import { EditarAnuncioForm } from "@/components/editar-anuncio-form";
 import { LeadStatusSelect } from "@/components/lead-status-select";
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
           <EditarAnuncioForm pro={pro} />
         </Card>
 
-        <PremiumToggle professionalId={pro.id} initial={pro.is_premium} />
+        <PremiumCheckout professionalId={pro.id} initial={pro.is_premium} />
 
         <Card className="space-y-2 p-5">
           <h2 className="font-semibold">Mi correo electrónico</h2>
