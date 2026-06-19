@@ -56,6 +56,16 @@ export type Contact = {
   created_at: string;
 };
 
+export type Review = {
+  id: string;
+  professional_id: string;
+  client_id: string | null;
+  reviewer_name: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
 export type Store = {
   id: string;
   name: string;
