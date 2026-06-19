@@ -19,7 +19,7 @@
 - [ ] Subir fotos reales (foto de perfil + trabajos recientes) con Supabase Storage, no depender del seed
 
 ## Cuenta del Profesional (dashboard)
-- [ ] El lenguaje tiene que ser humano — nada de "Lead", los profesionistas deben entender todo de la manera más clara y sencilla posible, pensemos que son señores mayores
+- [x] El lenguaje tiene que ser humano — nada de "Lead", los profesionistas deben entender todo de la manera más clara y sencilla posible, pensemos que son señores mayores
 - [x] Profesionista: Editar mi anuncio, mi información personal
 - [x] Poder cambiar el nombre de la empresa, el logo, la descripción, imágenes, trabajos recientes (texto/disponibilidad listo; **logo + imágenes quedan para la tarea de Supabase Storage**)
 - [x] Métricas: "tu anuncio se vio X veces, te contactaron Y este mes" (esto justifica pagar Premium)

@@ -36,8 +36,8 @@ export default async function DashboardPage() {
     return (
       <Notice
         icon={<ShieldAlert className="size-8 text-muted-foreground" />}
-        title="Panel solo para profesionales"
-        description="Tu cuenta no tiene un perfil profesional asociado."
+        title="Este panel es solo para profesionales"
+        description="Tu cuenta no tiene un anuncio de profesional para administrar."
       />
     );
   }
@@ -55,8 +55,8 @@ export default async function DashboardPage() {
     return (
       <Notice
         icon={<ShieldAlert className="size-8 text-muted-foreground" />}
-        title="Todavía no tenés un perfil profesional"
-        description="Pedile al administrador que vincule tu cuenta con tu perfil para empezar a recibir contactos de clientes."
+        title="Todavía no tenés tu anuncio listo"
+        description="Escribile al administrador para que active tu anuncio y empezás a recibir clientes."
       />
     );
   }
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           <div>
             <h1 className="text-xl font-bold tracking-tight">Hola, {pro.name}</h1>
             <p className="text-sm text-muted-foreground">
-              Estos son los clientes que te contactaron.
+              Acá manejás tu anuncio y ves quién te contactó.
             </p>
           </div>
         </div>
@@ -150,16 +150,18 @@ export default async function DashboardPage() {
           <CambiarCorreoForm currentEmail={session.user.email} />
         </Card>
 
-        <Card className="overflow-hidden p-0">
+        <section className="space-y-3">
+          <h2 className="font-semibold">Quién te contactó</h2>
+          <Card className="overflow-hidden p-0">
           {leads.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-14 text-center">
               <Inbox className="size-8 text-muted-foreground" />
               <p className="font-medium">Todavía nadie te ha contactado</p>
               <p className="max-w-xs text-sm text-muted-foreground">
-                Cuando un cliente te llame o escriba por WhatsApp desde tu perfil, aparece acá.
+                Cuando un cliente te llame o escriba por WhatsApp desde tu anuncio, aparece acá.
               </p>
               <Button asChild variant="outline" size="sm" className="mt-1">
-                <Link href={`/pro/${pro.id}`}>Ver mi perfil público</Link>
+                <Link href={`/pro/${pro.id}`}>Ver cómo me ven los clientes</Link>
               </Button>
             </div>
           ) : (
@@ -197,7 +199,8 @@ export default async function DashboardPage() {
               </TableBody>
             </Table>
           )}
-        </Card>
+          </Card>
+        </section>
       </div>
     </main>
   );
