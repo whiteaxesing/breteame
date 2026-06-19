@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Search, ShieldAlert, History } from "lucide-react";
+import { Search, ShieldAlert, History, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { CategoryChip } from "@/components/badges";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Contact, ProfessionalPublic } from "@/lib/types";
+import type { Contact, ProfessionalPublic, Review } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,21 @@ export default async function CuentaPage() {
     .order("created_at", { ascending: false });
   const contacts = (contactsData ?? []) as Contact[];
 
-  const proIds = [...new Set(contacts.map((c) => c.professional_id))];
+  // Reseñas que dejó este cliente.
+  const { data: reviewsData } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("client_id", session.user.id)
+    .order("created_at", { ascending: false });
+  const misReviews = (reviewsData ?? []) as Review[];
+
+  // Un solo fetch de profesionales para historial + reseñas.
+  const proIds = [
+    ...new Set([
+      ...contacts.map((c) => c.professional_id),
+      ...misReviews.map((r) => r.professional_id),
+    ]),
+  ];
   let pros: ProfessionalPublic[] = [];
   if (proIds.length > 0) {
     const { data } = await supabase
@@ -127,6 +141,78 @@ export default async function CuentaPage() {
                   </Button>
                 </Card>
               ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Star className="size-4" /> Mis reseñas
+          </h2>
+
+          {misReviews.length === 0 ? (
+            <Card className="flex flex-col items-center gap-2 py-14 text-center">
+              <Star className="size-8 text-muted-foreground" />
+              <p className="font-medium">Todavía no dejaste ninguna reseña</p>
+              <p className="max-w-xs text-sm text-muted-foreground">
+                Después de contactar a un profesional, podés calificarlo desde su
+                perfil para ayudar a otros clientes.
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {misReviews.map((r) => {
+                const pro = proById.get(r.professional_id);
+                return (
+                  <Card key={r.id} className="space-y-2 p-4">
+                    <div className="flex items-center gap-3">
+                      {pro && (
+                        <ProfessionalAvatar
+                          name={pro.name}
+                          imageUrl={pro.image_url}
+                          category={pro.category}
+                          className="size-10 shrink-0 rounded-full"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
+                          {pro?.name ?? "Profesional"}
+                        </p>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={
+                                i < r.rating
+                                  ? "size-3.5 fill-amber-400 text-amber-400"
+                                  : "size-3.5 fill-muted text-muted-foreground/30"
+                              }
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      {pro && (
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                        >
+                          <Link href={`/pro/${pro.id}`}>Ver perfil</Link>
+                        </Button>
+                      )}
+                    </div>
+                    {r.comment && (
+                      <p className="text-sm leading-relaxed text-foreground/80">
+                        {r.comment}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {dateFmt.format(new Date(r.created_at))}
+                    </p>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>

@@ -30,7 +30,7 @@
 - [ ] Cuenta Cliente no sirve para nada — darle funcionalidad real
 - [x] Historial de servicios / profesionales contactados
 - [ ] Profesionales guardados
-- [ ] Mis reseñas
+- [x] Mis reseñas
 - [ ] Información personal (editar nombre, foto)
 
 ## Admin
