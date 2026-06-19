@@ -31,7 +31,7 @@
 - [x] Historial de servicios / profesionales contactados
 - [ ] Profesionales guardados
 - [x] Mis reseñas
-- [ ] Información personal (editar nombre, foto)
+- [x] Información personal (editar nombre, foto) (nombre listo; foto queda para la tarea de Supabase Storage)
 
 ## Admin
 - [ ] Admin Panel no hace absolutamente nada — funcionalidad real

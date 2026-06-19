@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Search, ShieldAlert, History, Star } from "lucide-react";
+import { Search, ShieldAlert, History, Star, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { CategoryChip } from "@/components/badges";
+import { EditarNombreForm } from "@/components/editar-nombre-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Contact, ProfessionalPublic, Review } from "@/lib/types";
@@ -215,6 +216,15 @@ export default async function CuentaPage() {
               })}
             </div>
           )}
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <UserRound className="size-4" /> Mi información
+          </h2>
+          <Card className="p-5">
+            <EditarNombreForm currentName={nombre} />
+          </Card>
         </section>
       </div>
     </main>
