@@ -370,6 +370,29 @@ export async function actualizarAnuncio(input: {
   return { ok: true };
 }
 
+/** Cuenta del cliente: actualiza su nombre. RLS limita al propio perfil. */
+export async function actualizarNombre(fullName: string): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  const nombre = fullName.trim();
+  if (!nombre) return { ok: false, error: "El nombre no puede quedar vacío." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: nombre })
+    .eq("id", user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/cuenta");
+  return { ok: true };
+}
+
 /** Dashboard del profesional: solicita cambio de correo. Supabase manda confirmación al nuevo correo. */
 export async function cambiarCorreo(newEmail: string): Promise<ActionResult> {
   const supabase = await createClient();
