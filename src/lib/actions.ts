@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContactChannel, ContactStatus, CategorySlug } from "@/lib/types";
+import { isCategorySlug } from "@/lib/categories";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 type ActionResultWithLink = { ok: true; link: string } | { ok: false; error: string };
@@ -278,6 +279,58 @@ export async function registrarProfesionalPublico(
   });
 
   if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/**
+ * Dashboard del profesional: actualiza los datos de su anuncio público.
+ * No recibe el id del cliente: actualiza la fila cuyo user_id es el del usuario
+ * autenticado (RLS professionals_update_own lo garantiza), así nadie puede
+ * editar el anuncio de otro pasando un id ajeno.
+ * No toca is_verified (lo bloquea el trigger) ni is_premium (tiene su toggle).
+ * Las fotos (image_url / portfolio_urls) se manejan aparte con Storage.
+ */
+export async function actualizarAnuncio(input: {
+  name: string;
+  category: CategorySlug;
+  location: string;
+  phone: string;
+  description: string;
+  isEmergency: boolean;
+  isAvailableNow: boolean;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+  if (!name) return { ok: false, error: "El nombre no puede quedar vacío." };
+  if (!phone) return { ok: false, error: "El teléfono no puede quedar vacío." };
+  if (!isCategorySlug(input.category)) {
+    return { ok: false, error: "Seleccioná un oficio válido." };
+  }
+
+  const { error } = await supabase
+    .from("professionals")
+    .update({
+      name,
+      category: input.category,
+      location: input.location.trim(),
+      phone,
+      description: input.description.trim() || null,
+      is_emergency: input.isEmergency,
+      is_available_now: input.isAvailableNow,
+    })
+    .eq("user_id", user.id);
+
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/");
   return { ok: true };
 }
 
