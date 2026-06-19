@@ -289,6 +289,61 @@ export async function cambiarCorreo(newEmail: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/**
+ * Perfil público: el cliente deja una reseña al profesional que contactó.
+ * RLS verifica que exista un contact previo; aquí validamos también para dar
+ * mensaje de error claro antes de llegar a la BD.
+ */
+export async function dejarResena(
+  professionalId: string,
+  rating: number,
+  comment: string,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión para dejar una reseña." };
+
+  const { count } = await supabase
+    .from("contacts")
+    .select("id", { count: "exact", head: true })
+    .eq("professional_id", professionalId)
+    .eq("client_id", user.id);
+
+  if ((count ?? 0) === 0) {
+    return { ok: false, error: "Solo podés reseñar profesionales que hayas contactado." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
+  const reviewerName = profile?.full_name ?? user.email ?? "Cliente";
+
+  const { error } = await supabase.from("reviews").insert({
+    professional_id: professionalId,
+    client_id: user.id,
+    reviewer_name: reviewerName,
+    rating,
+    comment: comment || null,
+  });
+
+  if (error) {
+    if (error.code === "23505") {
+      return { ok: false, error: "Ya dejaste una reseña para este profesional." };
+    }
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath(`/pro/${professionalId}`);
+  return { ok: true };
+}
+
 /** Panel de admin: verifica/desverifica un profesional. RLS+trigger exigen admin. */
 export async function toggleVerified(
   professionalId: string,
