@@ -370,6 +370,43 @@ export async function actualizarAnuncio(input: {
   return { ok: true };
 }
 
+/**
+ * Cuenta del cliente: guarda o quita un profesional de sus favoritos.
+ * RLS limita las filas al propio cliente (client_id = auth.uid()).
+ */
+export async function alternarGuardado(
+  professionalId: string,
+  guardar: boolean,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { ok: false, error: "Tenés que iniciar sesión para guardar profesionales." };
+  }
+
+  if (guardar) {
+    const { error } = await supabase
+      .from("saved_professionals")
+      .insert({ client_id: user.id, professional_id: professionalId });
+    // 23505 = ya estaba guardado; lo tratamos como éxito (idempotente).
+    if (error && error.code !== "23505") return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("saved_professionals")
+      .delete()
+      .eq("client_id", user.id)
+      .eq("professional_id", professionalId);
+    if (error) return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/cuenta");
+  revalidatePath(`/pro/${professionalId}`);
+  return { ok: true };
+}
+
 /** Cuenta del cliente: actualiza su nombre. RLS limita al propio perfil. */
 export async function actualizarNombre(fullName: string): Promise<ActionResult> {
   const supabase = await createClient();

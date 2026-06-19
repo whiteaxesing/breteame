@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Search, ShieldAlert, History, Star, UserRound } from "lucide-react";
+import { Search, ShieldAlert, History, Star, UserRound, Bookmark } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { CategoryChip } from "@/components/badges";
 import { EditarNombreForm } from "@/components/editar-nombre-form";
+import { GuardarButton } from "@/components/guardar-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Contact, ProfessionalPublic, Review } from "@/lib/types";
+import type { Contact, ProfessionalPublic, Review, SavedProfessional } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +52,20 @@ export default async function CuentaPage() {
     .order("created_at", { ascending: false });
   const misReviews = (reviewsData ?? []) as Review[];
 
-  // Un solo fetch de profesionales para historial + reseñas.
+  // Profesionales guardados (favoritos).
+  const { data: savedData } = await supabase
+    .from("saved_professionals")
+    .select("*")
+    .eq("client_id", session.user.id)
+    .order("created_at", { ascending: false });
+  const saved = (savedData ?? []) as SavedProfessional[];
+
+  // Un solo fetch de profesionales para historial + reseñas + guardados.
   const proIds = [
     ...new Set([
       ...contacts.map((c) => c.professional_id),
       ...misReviews.map((r) => r.professional_id),
+      ...saved.map((s) => s.professional_id),
     ]),
   ];
   let pros: ProfessionalPublic[] = [];
@@ -142,6 +152,54 @@ export default async function CuentaPage() {
                   </Button>
                 </Card>
               ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Bookmark className="size-4" /> Profesionales guardados
+          </h2>
+
+          {saved.length === 0 ? (
+            <Card className="flex flex-col items-center gap-2 py-14 text-center">
+              <Bookmark className="size-8 text-muted-foreground" />
+              <p className="font-medium">Todavía no guardaste a nadie</p>
+              <p className="max-w-xs text-sm text-muted-foreground">
+                Tocá &ldquo;Guardar&rdquo; en el perfil de un profesional para tenerlo
+                a mano y volver a encontrarlo rápido.
+              </p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {saved.map((s) => {
+                const pro = proById.get(s.professional_id);
+                if (!pro) return null;
+                return (
+                  <Card key={pro.id} className="flex flex-row items-center gap-3 p-4">
+                    <ProfessionalAvatar
+                      name={pro.name}
+                      imageUrl={pro.image_url}
+                      category={pro.category}
+                      className="size-12 shrink-0 rounded-full text-lg"
+                    />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <p className="truncate font-medium">{pro.name}</p>
+                      <CategoryChip category={pro.category} />
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/pro/${pro.id}`}>Ver perfil</Link>
+                      </Button>
+                      <GuardarButton
+                        professionalId={pro.id}
+                        initialSaved
+                        className="h-8 px-3 text-xs"
+                      />
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>
