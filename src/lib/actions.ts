@@ -36,6 +36,14 @@ export async function registrarContacto(
     return { ok: false, error: "Tenés que iniciar sesión para contactar." };
   }
 
+  // No registrar un contacto si el profesional abre su propio anuncio.
+  const { data: dueno } = await supabase
+    .from("professionals_public")
+    .select("user_id")
+    .eq("id", professionalId)
+    .single();
+  if (dueno?.user_id === user.id) return { ok: true };
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
@@ -57,6 +65,34 @@ export async function registrarContacto(
 
   if (error) return { ok: false, error: error.message };
   return { ok: true };
+}
+
+/**
+ * Registra una vista del anuncio público (para las métricas del profesional).
+ * No cuenta las visitas del propio dueño a su anuncio. Fire-and-forget desde
+ * el cliente: no revalida ni devuelve nada.
+ */
+export async function registrarVistaPerfil(professionalId: string): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // No inflar las métricas con las visitas del propio profesional.
+  if (user) {
+    const { data: pro } = await supabase
+      .from("professionals_public")
+      .select("user_id")
+      .eq("id", professionalId)
+      .single();
+    if (pro?.user_id === user.id) return;
+  }
+
+  await supabase.from("profile_views").insert({
+    professional_id: professionalId,
+    viewer_id: user?.id ?? null,
+  });
 }
 
 /** Panel del profesional: cambia el estado de un lead. RLS limita al dueño. */
