@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { PremiumToggle } from "@/components/premium-toggle";
 import { CambiarCorreoForm } from "@/components/cambiar-correo-form";
+import { EditarAnuncioForm } from "@/components/editar-anuncio-form";
 import { LeadStatusSelect } from "@/components/lead-status-select";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import type { Contact, ContactChannel, ProfessionalPublic } from "@/lib/types";
+import type { Contact, ContactChannel, ProfessionalWithContact } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -44,11 +45,11 @@ export default async function DashboardPage() {
   const supabase = await createClient();
 
   const { data: pros } = await supabase
-    .from("professionals_public")
+    .from("professionals_with_contact")
     .select("*")
     .eq("user_id", session.user.id)
     .limit(1);
-  const pro = pros?.[0] as ProfessionalPublic | undefined;
+  const pro = pros?.[0] as ProfessionalWithContact | undefined;
 
   if (!pro) {
     return (
@@ -91,6 +92,19 @@ export default async function DashboardPage() {
           <Stat label="Clientes recibidos" value={leads.length} />
           <Stat label="Sin atender" value={nuevos} highlight={nuevos > 0} />
         </div>
+
+        <Card className="space-y-1 p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-semibold">Mi anuncio</h2>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/pro/${pro.id}`}>Ver cómo me ven los clientes</Link>
+            </Button>
+          </div>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Así aparece tu información en Breteame. Cambiá lo que necesités y guardá.
+          </p>
+          <EditarAnuncioForm pro={pro} />
+        </Card>
 
         <PremiumToggle professionalId={pro.id} initial={pro.is_premium} />
 
