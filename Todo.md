@@ -28,7 +28,7 @@
 
 ## Cuenta del Cliente
 - [ ] Cuenta Cliente no sirve para nada — darle funcionalidad real
-- [ ] Historial de servicios / profesionales contactados
+- [x] Historial de servicios / profesionales contactados
 - [ ] Profesionales guardados
 - [ ] Mis reseñas
 - [ ] Información personal (editar nombre, foto)

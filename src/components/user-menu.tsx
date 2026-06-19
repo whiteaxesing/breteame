@@ -68,8 +68,10 @@ export function UserMenu({
           </DropdownMenuItem>
         )}
         {role === "cliente" && (
-          <DropdownMenuItem disabled>
-            <User /> Cuenta de cliente
+          <DropdownMenuItem asChild>
+            <Link href="/cuenta">
+              <User /> Mi cuenta
+            </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
