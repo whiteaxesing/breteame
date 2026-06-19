@@ -66,6 +66,13 @@ export type Review = {
   created_at: string;
 };
 
+export type ProfileView = {
+  id: string;
+  professional_id: string;
+  viewer_id: string | null;
+  created_at: string;
+};
+
 export type Store = {
   id: string;
   name: string;

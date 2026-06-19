@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, Lock, MapPin } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Eye, Lock, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
@@ -13,6 +13,7 @@ import {
 import { ContactButtons } from "@/components/contact-buttons";
 import { ReviewList } from "@/components/review-list";
 import { ReviewForm } from "@/components/review-form";
+import { RegistrarVista } from "@/components/registrar-vista";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { ProfessionalWithContact, Review } from "@/lib/types";
@@ -44,6 +45,9 @@ export default async function ProfilePage({
 
   if (error || !data) notFound();
   const pro = data as ProfessionalWithContact;
+
+  // ¿El que mira es el dueño de este anuncio? No tiene sentido que se contacte solo.
+  const isOwner = !!session && session.user.id === pro.user_id;
 
   // Reseñas: visibles para todos.
   const { data: reviewsData } = await supabase
@@ -77,6 +81,7 @@ export default async function ProfilePage({
 
   return (
     <main className="flex-1">
+      <RegistrarVista professionalId={pro.id} />
       <div className="mx-auto w-full max-w-4xl px-4 py-6">
         <Link
           href="/"
@@ -156,7 +161,9 @@ export default async function ProfilePage({
           <aside>
             <Card className="md:sticky md:top-20">
               <CardContent>
-                {session ? (
+                {isOwner ? (
+                  <OwnerNote />
+                ) : session ? (
                   pro.phone ? (
                     <ContactButtons
                       professionalId={pro.id}
@@ -207,6 +214,25 @@ function VerifiedSection() {
         ))}
       </ul>
     </section>
+  );
+}
+
+function OwnerNote() {
+  return (
+    <div className="flex flex-col items-center gap-3 py-4 text-center">
+      <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <Eye className="size-5" />
+      </span>
+      <div>
+        <p className="font-semibold">Este es tu anuncio</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Así lo ven los clientes. Desde tu panel podés cambiar tu información.
+        </p>
+      </div>
+      <Button asChild variant="outline" className="w-full">
+        <Link href="/dashboard">Editar mi anuncio</Link>
+      </Button>
+    </div>
   );
 }
 

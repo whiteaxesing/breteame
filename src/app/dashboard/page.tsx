@@ -70,6 +70,28 @@ export default async function DashboardPage() {
 
   const nuevos = leads.filter((l) => l.status === "nuevo").length;
 
+  // Métricas: "este mes" arranca el día 1 del mes actual (UTC).
+  const ahora = new Date();
+  const inicioMesMs = Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1);
+  const inicioMesIso = new Date(inicioMesMs).toISOString();
+
+  const { count: vistasMes } = await supabase
+    .from("profile_views")
+    .select("id", { count: "exact", head: true })
+    .eq("professional_id", pro.id)
+    .gte("created_at", inicioMesIso);
+
+  const { count: vistasTotal } = await supabase
+    .from("profile_views")
+    .select("id", { count: "exact", head: true })
+    .eq("professional_id", pro.id);
+
+  const contactosMes = leads.filter(
+    (l) => new Date(l.created_at).getTime() >= inicioMesMs,
+  ).length;
+
+  const nombreMes = ahora.toLocaleDateString("es-CR", { month: "long" });
+
   return (
     <main className="flex-1">
       <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
@@ -88,10 +110,25 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:max-w-sm">
-          <Stat label="Clientes recibidos" value={leads.length} />
-          <Stat label="Sin atender" value={nuevos} highlight={nuevos > 0} />
-        </div>
+        <section className="space-y-3">
+          <h2 className="font-semibold capitalize">Cómo te fue en {nombreMes}</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Stat
+              label="Vieron tu anuncio"
+              value={vistasMes ?? 0}
+              hint={`${vistasTotal ?? 0} en total`}
+            />
+            <Stat
+              label="Te contactaron"
+              value={contactosMes}
+              hint={`${leads.length} en total`}
+            />
+            <Stat label="Sin atender" value={nuevos} highlight={nuevos > 0} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Entre más personas vean tu anuncio, más clientes te contactan.
+          </p>
+        </section>
 
         <Card className="space-y-1 p-5">
           <div className="flex items-center justify-between gap-3">
@@ -169,10 +206,12 @@ export default async function DashboardPage() {
 function Stat({
   label,
   value,
+  hint,
   highlight,
 }: {
   label: string;
   value: number;
+  hint?: string;
   highlight?: boolean;
 }) {
   return (
@@ -186,6 +225,7 @@ function Stat({
       >
         {value}
       </p>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
