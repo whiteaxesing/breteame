@@ -39,7 +39,31 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANTE: no metas lógica entre crear el cliente y getUser().
   // getUser() revalida el token y refresca la cookie si hace falta.
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch (error) {
+    // Cookie con refresh token que ya no existe en Supabase (proyecto
+    // reseteado, sesión revocada, etc.). La borramos para que no siga
+    // intentando refrescarla en cada request — se autorepara solo.
+    if (isRefreshTokenError(error)) {
+      const staleNames = request.cookies
+        .getAll()
+        .map((c) => c.name)
+        .filter((name) => name.startsWith("sb-"));
+      staleNames.forEach((name) => request.cookies.delete(name));
+      supabaseResponse = NextResponse.next({ request });
+      staleNames.forEach((name) => supabaseResponse.cookies.delete(name));
+    }
+  }
 
   return supabaseResponse;
+}
+
+function isRefreshTokenError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "refresh_token_not_found"
+  );
 }

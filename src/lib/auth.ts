@@ -20,9 +20,17 @@ export async function getCurrentUser(): Promise<{
 
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Una cookie con un refresh token inválido/expirado (proyecto Supabase
+  // reseteado, sesión revocada, etc.) hace que getUser() lance en vez de
+  // devolver user: null. Lo tratamos como "sin sesión".
+  let user;
+  try {
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch {
+    return null;
+  }
 
   if (!user) return null;
 
