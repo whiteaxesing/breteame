@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Claude Code
 .claude/
+
+# Panfletos generados (regenerables con scripts/generar-panfletos.mjs)
+/panfletos/
