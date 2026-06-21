@@ -70,7 +70,14 @@ export function LoginForm({ next }: { next: string }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        // Si "Confirm email" está activado en Supabase, el link del correo
+        // tiene que pasar por /auth/callback para intercambiar el code por
+        // sesión — si no, Supabase usa el Site URL tal cual (sin /auth/callback)
+        // y el usuario cae logueado a medias en la home.
+        emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
     if (error) {
       setError(error.message);
