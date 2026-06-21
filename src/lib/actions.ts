@@ -7,6 +7,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContactChannel, ContactStatus, CategorySlug } from "@/lib/types";
 import { isCategorySlug } from "@/lib/categories";
 import { falla } from "@/lib/action-errors";
+import {
+  LIMITES,
+  esEmailValido,
+  esRatingValido,
+  esTelefonoCRValido,
+  excedeLimite,
+} from "@/lib/validaciones";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 type ActionResultWithLink = { ok: true; link: string } | { ok: false; error: string };
@@ -35,6 +42,11 @@ export async function registrarContacto(
 
   if (!user) {
     return { ok: false, error: "Tenés que iniciar sesión para contactar." };
+  }
+
+  const CANALES: ContactChannel[] = ["whatsapp", "llamada", "copiar"];
+  if (!CANALES.includes(channel)) {
+    return { ok: false, error: "Canal de contacto inválido." };
   }
 
   // No registrar un contacto si el profesional abre su propio anuncio.
@@ -101,6 +113,11 @@ export async function setLeadStatus(
   contactId: string,
   status: ContactStatus,
 ): Promise<ActionResult> {
+  const ESTADOS: ContactStatus[] = ["nuevo", "contactado", "cerrado"];
+  if (!ESTADOS.includes(status)) {
+    return { ok: false, error: "Estado de lead inválido." };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("contacts")
@@ -152,11 +169,23 @@ export async function invitarProfesional(
     .single();
   if (profile?.role !== "admin") return { ok: false, error: "Acción reservada para admins." };
 
+  const nombre = name.trim();
+  const correo = email.trim();
+  if (!nombre) return { ok: false, error: "El nombre es obligatorio." };
+  if (excedeLimite(nombre, LIMITES.nombre)) {
+    return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  }
+  if (!esEmailValido(correo)) return { ok: false, error: "Ingresá un correo válido." };
+  if (!esTelefonoCRValido(phone)) {
+    return { ok: false, error: "Ingresá un teléfono válido de 8 dígitos." };
+  }
+  if (!isCategorySlug(category)) return { ok: false, error: "Seleccioná un oficio válido." };
+
   const admin = createAdminClient();
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
     type: "invite",
-    email,
+    email: correo,
   });
   if (linkError) return falla(linkError, "generateLink");
 
@@ -165,13 +194,13 @@ export async function invitarProfesional(
 
   await admin
     .from("profiles")
-    .upsert({ id: userId, role: "profesional", full_name: name });
+    .upsert({ id: userId, role: "profesional", full_name: nombre });
 
   const { error: proError } = await admin.from("professionals").insert({
     user_id: userId,
-    name,
+    name: nombre,
     category,
-    phone,
+    phone: phone.trim(),
     location: "",
   });
 
@@ -280,6 +309,21 @@ export async function registrarProfesionalPublico(
   if (!name.trim() || !phone.trim()) {
     return { ok: false, error: "Nombre y teléfono son obligatorios." };
   }
+  if (!esTelefonoCRValido(phone)) {
+    return { ok: false, error: "Ingresá un teléfono válido de 8 dígitos." };
+  }
+  if (!isCategorySlug(category)) {
+    return { ok: false, error: "Seleccioná un oficio válido." };
+  }
+  if (excedeLimite(name, LIMITES.nombre)) {
+    return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  }
+  if (excedeLimite(location, LIMITES.ubicacion)) {
+    return { ok: false, error: `La ubicación no puede superar ${LIMITES.ubicacion} caracteres.` };
+  }
+  if (excedeLimite(description, LIMITES.descripcion)) {
+    return { ok: false, error: `La descripción no puede superar ${LIMITES.descripcion} caracteres.` };
+  }
 
   const admin = createAdminClient();
 
@@ -347,8 +391,20 @@ export async function actualizarAnuncio(input: {
   const phone = input.phone.trim();
   if (!name) return { ok: false, error: "El nombre no puede quedar vacío." };
   if (!phone) return { ok: false, error: "El teléfono no puede quedar vacío." };
+  if (!esTelefonoCRValido(phone)) {
+    return { ok: false, error: "Ingresá un teléfono válido de 8 dígitos." };
+  }
   if (!isCategorySlug(input.category)) {
     return { ok: false, error: "Seleccioná un oficio válido." };
+  }
+  if (excedeLimite(name, LIMITES.nombre)) {
+    return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  }
+  if (excedeLimite(input.location, LIMITES.ubicacion)) {
+    return { ok: false, error: `La ubicación no puede superar ${LIMITES.ubicacion} caracteres.` };
+  }
+  if (excedeLimite(input.description, LIMITES.descripcion)) {
+    return { ok: false, error: `La descripción no puede superar ${LIMITES.descripcion} caracteres.` };
   }
 
   const { error } = await supabase
@@ -419,6 +475,9 @@ export async function actualizarNombre(fullName: string): Promise<ActionResult> 
 
   const nombre = fullName.trim();
   if (!nombre) return { ok: false, error: "El nombre no puede quedar vacío." };
+  if (excedeLimite(nombre, LIMITES.nombre)) {
+    return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  }
 
   const { error } = await supabase
     .from("profiles")
@@ -433,8 +492,11 @@ export async function actualizarNombre(fullName: string): Promise<ActionResult> 
 
 /** Dashboard del profesional: solicita cambio de correo. Supabase manda confirmación al nuevo correo. */
 export async function cambiarCorreo(newEmail: string): Promise<ActionResult> {
+  const correo = newEmail.trim();
+  if (!esEmailValido(correo)) return { ok: false, error: "Ingresá un correo válido." };
+
   const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ email: newEmail });
+  const { error } = await supabase.auth.updateUser({ email: correo });
   if (error) return falla(error);
   return { ok: true };
 }
@@ -456,6 +518,13 @@ export async function dejarResena(
   } = await supabase.auth.getUser();
 
   if (!user) return { ok: false, error: "Tenés que iniciar sesión para dejar una reseña." };
+
+  if (!esRatingValido(rating)) {
+    return { ok: false, error: "La calificación debe ser de 1 a 5 estrellas." };
+  }
+  if (excedeLimite(comment, LIMITES.comentario)) {
+    return { ok: false, error: `El comentario no puede superar ${LIMITES.comentario} caracteres.` };
+  }
 
   const { count } = await supabase
     .from("contacts")
