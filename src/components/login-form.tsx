@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,44 @@ import { Separator } from "@/components/ui/separator";
 
 type Mode = "signin" | "signup";
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+            nonce: string;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              type: "standard";
+              theme: "outline" | "filled_blue" | "filled_black";
+              size: "large" | "medium" | "small";
+              text: "continue_with" | "signin_with" | "signup_with";
+              shape: "rectangular" | "pill";
+              width: number;
+            },
+          ) => void;
+        };
+      };
+    };
+  }
+}
+
+// Supabase exige el nonce sin hashear; a Google se le manda el hash (SHA-256)
+// para que el ID token lo incluya y se pueda verificar que no es un replay.
+async function generateNonce(): Promise<[string, string]> {
+  const raw = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+  const hashed = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return [raw, hashed];
+}
+
 const DEMO_ACCOUNTS = [
   { label: "Cliente", email: "cliente@demo.cr" },
   { label: "Profesional", email: "pro@demo.cr" },
@@ -26,6 +65,7 @@ const DEMO_ACCOUNTS = [
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const [mode, setMode] = useState<Mode>("signin");
   const [fullName, setFullName] = useState("");
@@ -97,16 +137,42 @@ export function LoginForm({ next }: { next: string }) {
     finish();
   }
 
-  async function onGoogle() {
-    setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+  useEffect(() => {
+    // Si el script de Google ya estaba cacheado (navegación interna sin
+    // recarga), su onLoad no vuelve a dispararse — lo inicializamos acá.
+    if (window.google) initGoogleButton();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function initGoogleButton() {
+    if (!window.google || !googleButtonRef.current) return;
+    const [nonce, hashedNonce] = await generateNonce();
+    window.google.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      nonce: hashedNonce,
+      callback: async (response) => {
+        setError(null);
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: response.credential,
+          nonce,
+        });
+        if (error) {
+          setError("No se pudo iniciar con Google.");
+          return;
+        }
+        finish();
       },
     });
-    if (error) setError("No se pudo iniciar con Google.");
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "rectangular",
+      width: googleButtonRef.current.clientWidth || 384,
+    });
   }
 
   return (
@@ -122,14 +188,12 @@ export function LoginForm({ next }: { next: string }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={onGoogle}
-        >
-          <GoogleIcon /> Continuar con Google
-        </Button>
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+          onLoad={initGoogleButton}
+        />
+        <div ref={googleButtonRef} className="flex w-full justify-center" />
 
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />
@@ -234,28 +298,5 @@ export function LoginForm({ next }: { next: string }) {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z"
-      />
-    </svg>
   );
 }
