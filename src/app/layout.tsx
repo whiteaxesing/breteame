@@ -14,9 +14,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://breteame.com"),
   title: "Breteame — Profesionales verificados en Costa Rica",
   description:
     "Encontrá fontaneros, electricistas, cerrajeros, jardineros y escombreros verificados cerca tuyo. Contactalos directo por WhatsApp o llamada.",
+  openGraph: {
+    type: "website",
+    locale: "es_CR",
+    siteName: "Breteame",
+    title: "Breteame — Profesionales verificados en Costa Rica",
+    description:
+      "Encontrá fontaneros, electricistas, cerrajeros, jardineros y escombreros verificados cerca tuyo. Contactalos directo por WhatsApp o llamada.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Breteame — Profesionales verificados en Costa Rica",
+    description:
+      "Encontrá fontaneros, electricistas, cerrajeros, jardineros y escombreros verificados cerca tuyo. Contactalos directo por WhatsApp o llamada.",
+  },
 };
 
 export default function RootLayout({
