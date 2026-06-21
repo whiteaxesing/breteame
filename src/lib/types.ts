@@ -6,7 +6,12 @@ export type CategorySlug =
   | "electricidad"
   | "cerrajeria"
   | "jardineria"
-  | "escombreros";
+  | "escombreros"
+  | "pintura"
+  | "aires"
+  | "carpinteria"
+  | "ebanisteria"
+  | "limpieza";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 
