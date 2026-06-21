@@ -1,6 +1,15 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { QrCode, ShieldAlert, Store as StoreIcon, UserPlus } from "lucide-react";
+import {
+  Handshake,
+  HardHat,
+  QrCode,
+  ShieldAlert,
+  Store as StoreIcon,
+  TrendingUp,
+  UserPlus,
+  Users,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
@@ -46,18 +55,27 @@ export default async function AdminPage() {
   }
 
   const supabase = await createClient();
-  const [{ data: prosData }, { data: storesData }] = await Promise.all([
+  const [
+    { data: prosData },
+    { data: storesData },
+    { count: usuarios },
+    { count: contactos },
+  ] = await Promise.all([
     supabase
       .from("professionals_public")
       .select("*")
       .order("is_verified", { ascending: true })
       .order("created_at", { ascending: false }),
     supabase.from("stores").select("*").order("qr_scans", { ascending: false }),
+    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("contacts").select("*", { count: "exact", head: true }),
   ]);
 
   const pros = (prosData ?? []) as ProfessionalPublic[];
   const stores = (storesData ?? []) as Store[];
   const pendientes = pros.filter((p) => !p.is_verified).length;
+  const verificados = pros.length - pendientes;
+  const ferreteriasAliadas = stores.filter((s) => s.is_partner).length;
   const totalScans = stores.reduce((sum, s) => sum + s.qr_scans, 0);
 
   return (
@@ -69,6 +87,41 @@ export default async function AdminPage() {
             Verificá profesionales y monitoreá las ferreterías aliadas.
           </p>
         </div>
+
+        {/* Métricas globales (para el pitch) */}
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <TrendingUp className="size-4" /> Métricas de la plataforma
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <Stat
+              icon={<Users className="size-4 text-blue-600" />}
+              value={usuarios ?? 0}
+              label="Usuarios"
+            />
+            <Stat
+              icon={<Handshake className="size-4 text-green-600" />}
+              value={contactos ?? 0}
+              label="Contactos"
+            />
+            <Stat
+              icon={<HardHat className="size-4 text-violet-600" />}
+              value={pros.length}
+              label="Profesionales"
+              hint={`${verificados} verificados`}
+            />
+            <Stat
+              icon={<StoreIcon className="size-4 text-orange-600" />}
+              value={ferreteriasAliadas}
+              label="Ferreterías aliadas"
+            />
+            <Stat
+              icon={<QrCode className="size-4 text-primary" />}
+              value={totalScans}
+              label="Escaneos QR"
+            />
+          </div>
+        </section>
 
         {/* Invitar profesional */}
         <Card>
@@ -219,6 +272,29 @@ export default async function AdminPage() {
         </Card>
       </div>
     </main>
+  );
+}
+
+function Stat({
+  icon,
+  value,
+  label,
+  hint,
+}: {
+  icon: React.ReactNode;
+  value: React.ReactNode;
+  label: string;
+  hint?: string;
+}) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        {icon}
+        <span className="text-xs font-medium">{label}</span>
+      </div>
+      <p className="mt-2 text-2xl font-bold tabular-nums">{value}</p>
+      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+    </div>
   );
 }
 
