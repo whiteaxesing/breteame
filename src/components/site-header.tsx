@@ -19,6 +19,11 @@ export async function SiteHeader() {
         </Link>
 
         <div className="flex items-center gap-1">
+          {session?.profile?.role !== "profesional" && (
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/unirse">Soy profesional</Link>
+            </Button>
+          )}
           <ThemeToggle />
           {session ? (
             <UserMenu
