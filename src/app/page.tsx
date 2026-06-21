@@ -125,6 +125,13 @@ export default async function HomePage({
               <SearchFilters category={category} location={location} q={q} emergency={emergency} available={available} lat={lat} lng={lng} radio={radio} />
             </Suspense>
           </div>
+
+          <p className="mt-3 text-sm text-muted-foreground">
+            ¿Sos profesional?{" "}
+            <Link href="/unirse" className="font-medium text-primary underline-offset-4 hover:underline">
+              Aparecé en Breteame gratis
+            </Link>
+          </p>
         </div>
       </section>
 
