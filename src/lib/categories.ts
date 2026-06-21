@@ -9,6 +9,7 @@ import {
   Hammer,
   Armchair,
   Sparkles,
+  Waves,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -119,6 +120,15 @@ export const CATEGORIES: Category[] = [
     chip: "bg-teal-100 text-teal-700",
     solid: "bg-teal-600",
     accent: "text-teal-600",
+  },
+  {
+    slug: "piscinas",
+    label: "Piscinas",
+    tagline: "Mantenimiento, limpieza y reparación",
+    icon: Waves,
+    chip: "bg-cyan-100 text-cyan-700",
+    solid: "bg-cyan-600",
+    accent: "text-cyan-600",
   },
 ];
 

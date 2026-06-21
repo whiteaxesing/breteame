@@ -11,7 +11,8 @@ export type CategorySlug =
   | "aires"
   | "carpinteria"
   | "ebanisteria"
-  | "limpieza";
+  | "limpieza"
+  | "piscinas";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 
