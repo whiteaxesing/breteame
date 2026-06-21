@@ -6,7 +6,9 @@
 --   · mezcla de is_verified / is_premium
 --   · 2 SIN image_url (para verificar el placeholder)
 --   · algunos con portfolio_urls y otros vacíos (para verificar que se oculta)
--- Las imágenes usan picsum.photos (siempre cargan) solo para el demo.
+-- Las imágenes usan pravatar.cc (servicio estable hecho para fotos de
+-- prueba) solo para el demo — picsum.photos se cayó y dejó todas las
+-- fotos rotas, así que se cambió de proveedor.
 -- ============================================================================
 
 insert into public.professionals
@@ -20,11 +22,11 @@ values
    'San José, Hatillo',
    'Fontanero con 12 años de experiencia. Fugas, destaqueos, instalación de calentadores y tanques. Atención el mismo día.',
    true, true, true, 4.9,
-   'https://picsum.photos/seed/breteame-marvin/400/400',
+   'https://i.pravatar.cc/400?u=breteame-marvin',
    array[
-     'https://picsum.photos/seed/breteame-marvin-1/600/400',
-     'https://picsum.photos/seed/breteame-marvin-2/600/400',
-     'https://picsum.photos/seed/breteame-marvin-3/600/400'
+     'https://i.pravatar.cc/400?u=breteame-marvin-1',
+     'https://i.pravatar.cc/400?u=breteame-marvin-2',
+     'https://i.pravatar.cc/400?u=breteame-marvin-3'
    ],
    '+50688881111'),
 
@@ -46,10 +48,10 @@ values
    'Alajuela, Centro',
    'Apertura de puertas y vehículos, cambio de cilindros, copias de llaves y cerraduras de seguridad. Servicio 24/7.',
    true, true, true, 4.8,
-   'https://picsum.photos/seed/breteame-llave/400/400',
+   'https://i.pravatar.cc/400?u=breteame-llave',
    array[
-     'https://picsum.photos/seed/breteame-llave-1/600/400',
-     'https://picsum.photos/seed/breteame-llave-2/600/400'
+     'https://i.pravatar.cc/400?u=breteame-llave-1',
+     'https://i.pravatar.cc/400?u=breteame-llave-2'
    ],
    '+50688883333'),
 
@@ -72,7 +74,7 @@ values
    'San José, Desamparados',
    'Remoción de escombros, demolición menor y acarreo de materiales. Vagoneta propia, cotización rápida.',
    true, false, true, 4.6,
-   'https://picsum.photos/seed/breteame-gam/400/400',
+   'https://i.pravatar.cc/400?u=breteame-gam',
    '{}',
    '+50688885555')
 on conflict (id) do nothing;
@@ -101,7 +103,7 @@ values
    'Heredia, San Pablo',
    'Especialista en fontanería residencial y comercial. Reparación de tuberías, instalación de llaves y calentadores solares.',
    true, false, true, 4.3,
-   'https://picsum.photos/seed/breteame-andrea/400/400',
+   'https://i.pravatar.cc/400?u=breteame-andrea',
    '{}',
    '+50688886666'),
 
@@ -111,8 +113,8 @@ values
    'Escazú, San Rafael',
    'Instalación y mantenimiento de gas LP, gas natural y tubería de agua. Certificados por ARESEP.',
    true, true, true, 4.7,
-   'https://picsum.photos/seed/breteame-gasfontan/400/400',
-   array['https://picsum.photos/seed/breteame-gasfontan-1/600/400','https://picsum.photos/seed/breteame-gasfontan-2/600/400'],
+   'https://i.pravatar.cc/400?u=breteame-gasfontan',
+   array['https://i.pravatar.cc/400?u=breteame-gasfontan-1','https://i.pravatar.cc/400?u=breteame-gasfontan-2'],
    '+50688887777'),
 
   ('88888888-8888-4888-8888-888888888888',
@@ -132,8 +134,8 @@ values
    'Escazú, Guachipelín',
    'Instalaciones eléctricas residenciales y automatización del hogar. Smart home, luces LED, paneles solares.',
    true, true, true, 4.8,
-   'https://picsum.photos/seed/breteame-electrohogar/400/400',
-   array['https://picsum.photos/seed/breteame-electrohogar-1/600/400','https://picsum.photos/seed/breteame-electrohogar-2/600/400'],
+   'https://i.pravatar.cc/400?u=breteame-electrohogar',
+   array['https://i.pravatar.cc/400?u=breteame-electrohogar-1','https://i.pravatar.cc/400?u=breteame-electrohogar-2'],
    '+50688889999'),
 
   ('f0f0f0f0-f0f0-4f0f-8f0f-f0f0f0f0f0f0',
@@ -142,7 +144,7 @@ values
    'Cartago, Centro',
    'Electricista residencial e industrial. Revisión de paneles, interruptores y cableado. Atención en Cartago y La Unión.',
    true, false, true, 4.4,
-   'https://picsum.photos/seed/breteame-mauricio/400/400',
+   'https://i.pravatar.cc/400?u=breteame-mauricio',
    '{}',
    '+50688880101'),
 
@@ -163,7 +165,7 @@ values
    'Escazú, Bello Horizonte',
    'Apertura de puertas sin daños, duplicado de llaves inteligentes y cerraduras de alta seguridad para condominios.',
    true, false, true, 4.5,
-   'https://picsum.photos/seed/breteame-keymaster/400/400',
+   'https://i.pravatar.cc/400?u=breteame-keymaster',
    '{}',
    '+50688880303'),
 
@@ -184,8 +186,8 @@ values
    'Heredia, Mercedes',
    'Mantenimiento semanal y quincenal de jardines. Poda de cercas vivas, siembra y fertilización.',
    true, true, true, 4.6,
-   'https://picsum.photos/seed/breteame-verdelimpio/400/400',
-   array['https://picsum.photos/seed/breteame-verdelimpio-1/600/400'],
+   'https://i.pravatar.cc/400?u=breteame-verdelimpio',
+   array['https://i.pravatar.cc/400?u=breteame-verdelimpio-1'],
    '+50688880505'),
 
   ('e5e5e5e5-e5e5-4e5e-8e5e-e5e5e5e5e5e5',
@@ -204,7 +206,7 @@ values
    'La Unión, Tres Ríos',
    'Diseño y mantenimiento de áreas verdes para casas, condominios y empresas. Especializados en jardines tropicales.',
    true, false, true, 4.3,
-   'https://picsum.photos/seed/breteame-vallejardines/400/400',
+   'https://i.pravatar.cc/400?u=breteame-vallejardines',
    '{}',
    '+50688880707'),
 
@@ -215,7 +217,7 @@ values
    'Heredia, Barva',
    'Retiro de escombros el mismo día. Vagoneta doble fondo. Servicio en Heredia, Alajuela y norte de San José.',
    true, false, true, 4.4,
-   'https://picsum.photos/seed/breteame-escombrosexp/400/400',
+   'https://i.pravatar.cc/400?u=breteame-escombrosexp',
    '{}',
    '+50688880808'),
 
