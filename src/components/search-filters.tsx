@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, Locate, MapPin, Search, Shield, X, Zap } from "lucide-react";
+import { Locate, MapPin, Search, Shield, X, Zap } from "lucide-react";
 import { CATEGORIES, COMING_SOON } from "@/lib/categories";
 import { LOCATION_GROUPS } from "@/lib/locations";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,6 @@ export function SearchFilters({
   const [text, setText] = useState(q ?? "");
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
 
   function commit(params: URLSearchParams) {
     const qs = params.toString();
@@ -72,6 +71,26 @@ export function SearchFilters({
     return () => clearTimeout(handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
+
+  function renderCategoryButton(c: (typeof CATEGORIES)[number]) {
+    const active = category === c.slug;
+    const Icon = c.icon;
+    return (
+      <button
+        key={c.slug}
+        type="button"
+        onClick={() => setParam("category", active ? "" : c.slug)}
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
+          active
+            ? cn(c.solid, "border-transparent text-white")
+            : "border-input bg-background hover:bg-muted",
+        )}
+      >
+        <Icon className={cn("size-4", !active && c.accent)} /> {c.label}
+      </button>
+    );
+  }
 
   const isEmergency = emergency === "1";
   const isAvailable = available === "1";
@@ -133,31 +152,8 @@ export function SearchFilters({
       </div>
 
       <div className="pb-2">
-        <div
-          className={cn(
-            "flex flex-wrap gap-2 overflow-hidden pb-1 transition-[max-height] duration-300 ease-in-out",
-            expanded ? "max-h-96" : "max-h-20",
-          )}
-        >
-          {CATEGORIES.map((c) => {
-            const active = category === c.slug;
-            const Icon = c.icon;
-            return (
-              <button
-                key={c.slug}
-                type="button"
-                onClick={() => setParam("category", active ? "" : c.slug)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition",
-                  active
-                    ? cn(c.solid, "border-transparent text-white")
-                    : "border-input bg-background hover:bg-muted",
-                )}
-              >
-                <Icon className={cn("size-4", !active && c.accent)} /> {c.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap gap-2 pb-1">
+          {CATEGORIES.map(renderCategoryButton)}
           {COMING_SOON.map((c) => {
             const Icon = c.icon;
             return (
@@ -172,16 +168,6 @@ export function SearchFilters({
             );
           })}
         </div>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1.5 flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ChevronDown
-            className={cn("size-3.5 transition-transform duration-300", expanded && "rotate-180")}
-          />
-          {expanded ? "Ver menos" : "Ver más filtros"}
-        </button>
       </div>
 
       <div className="flex flex-wrap gap-2 border-t pt-3">
