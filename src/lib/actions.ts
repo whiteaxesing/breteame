@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContactChannel, ContactStatus, CategorySlug } from "@/lib/types";
 import { isCategorySlug } from "@/lib/categories";
+import { falla } from "@/lib/action-errors";
 
 type ActionResult = { ok: true } | { ok: false; error: string };
 type ActionResultWithLink = { ok: true; link: string } | { ok: false; error: string };
@@ -63,7 +64,7 @@ export async function registrarContacto(
     qr_source: qrSource,
   });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   return { ok: true };
 }
 
@@ -106,7 +107,7 @@ export async function setLeadStatus(
     .update({ status })
     .eq("id", contactId);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   revalidatePath("/dashboard");
   return { ok: true };
 }
@@ -122,7 +123,7 @@ export async function togglePremium(
     .update({ is_premium: value })
     .eq("id", professionalId);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   revalidatePath("/dashboard");
   revalidatePath("/");
   return { ok: true };
@@ -157,7 +158,7 @@ export async function invitarProfesional(
     type: "invite",
     email,
   });
-  if (linkError) return { ok: false, error: linkError.message };
+  if (linkError) return falla(linkError, "generateLink");
 
   const userId = linkData.user.id;
   const link = linkData.properties.action_link;
@@ -174,7 +175,7 @@ export async function invitarProfesional(
     location: "",
   });
 
-  if (proError) return { ok: false, error: proError.message };
+  if (proError) return falla(proError);
 
   revalidatePath("/admin");
   return { ok: true, link: await acortarUrl(link) };
@@ -214,7 +215,7 @@ export async function darAccesoProfesional(
     type: "invite",
     email: placeholderEmail,
   });
-  if (linkError) return { ok: false, error: linkError.message };
+  if (linkError) return falla(linkError, "generateLink");
 
   const userId = linkData.user.id;
   const link = linkData.properties.action_link;
@@ -228,7 +229,7 @@ export async function darAccesoProfesional(
     .update({ user_id: userId })
     .eq("id", professionalId);
 
-  if (proError) return { ok: false, error: proError.message };
+  if (proError) return falla(proError);
 
   revalidatePath("/admin");
   return { ok: true, link: await acortarUrl(link) };
@@ -256,7 +257,7 @@ export async function regenerarAcceso(professionalId: string): Promise<ActionRes
     type: "magiclink",
     email: placeholderEmail,
   });
-  if (linkError) return { ok: false, error: linkError.message };
+  if (linkError) return falla(linkError, "generateLink");
 
   return { ok: true, link: await acortarUrl(linkData.properties.action_link) };
 }
@@ -314,7 +315,7 @@ export async function registrarProfesionalPublico(
     description: description.trim() || null,
   });
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   return { ok: true };
 }
 
@@ -363,7 +364,7 @@ export async function actualizarAnuncio(input: {
     })
     .eq("user_id", user.id);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
 
   revalidatePath("/dashboard");
   revalidatePath("/");
@@ -392,14 +393,14 @@ export async function alternarGuardado(
       .from("saved_professionals")
       .insert({ client_id: user.id, professional_id: professionalId });
     // 23505 = ya estaba guardado; lo tratamos como éxito (idempotente).
-    if (error && error.code !== "23505") return { ok: false, error: error.message };
+    if (error && error.code !== "23505") return falla(error);
   } else {
     const { error } = await supabase
       .from("saved_professionals")
       .delete()
       .eq("client_id", user.id)
       .eq("professional_id", professionalId);
-    if (error) return { ok: false, error: error.message };
+    if (error) return falla(error);
   }
 
   revalidatePath("/cuenta");
@@ -424,7 +425,7 @@ export async function actualizarNombre(fullName: string): Promise<ActionResult> 
     .update({ full_name: nombre })
     .eq("id", user.id);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
 
   revalidatePath("/cuenta");
   return { ok: true };
@@ -434,7 +435,7 @@ export async function actualizarNombre(fullName: string): Promise<ActionResult> 
 export async function cambiarCorreo(newEmail: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ email: newEmail });
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   return { ok: true };
 }
 
@@ -486,7 +487,7 @@ export async function dejarResena(
     if (error.code === "23505") {
       return { ok: false, error: "Ya dejaste una reseña para este profesional." };
     }
-    return { ok: false, error: error.message };
+    return falla(error);
   }
 
   revalidatePath(`/pro/${professionalId}`);
@@ -504,7 +505,7 @@ export async function toggleVerified(
     .update({ is_verified: value })
     .eq("id", professionalId);
 
-  if (error) return { ok: false, error: error.message };
+  if (error) return falla(error);
   revalidatePath("/admin");
   revalidatePath("/");
   return { ok: true };
