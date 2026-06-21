@@ -185,17 +185,16 @@ export function LoginForm({ next }: { next: string }) {
         <CardDescription>
           {mode === "signin"
             ? "Necesitás una cuenta para contactar a los profesionales."
-            : "Para contactar profesionales verificados. "}
-          {mode === "signup" && (
-            <>
-              ¿Sos profesional?{" "}
-              <Link href="/unirse" className="font-medium text-primary underline-offset-4 hover:underline">
-                Aparecé en Breteame
-              </Link>
-              .
-            </>
-          )}
+            : "Para contactar profesionales verificados."}
         </CardDescription>
+        {mode === "signup" && (
+          <p className="text-base">
+            ¿Sos profesional?{" "}
+            <Link href="/unirse" className="font-semibold text-primary underline-offset-4 hover:underline">
+              Aparecé en Breteame
+            </Link>
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <Script
