@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Script from "next/script";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -179,12 +180,21 @@ export function LoginForm({ next }: { next: string }) {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">
-          {mode === "signin" ? "Iniciá sesión" : "Creá tu cuenta"}
+          {mode === "signin" ? "Iniciá sesión" : "Creá tu cuenta de cliente"}
         </CardTitle>
         <CardDescription>
           {mode === "signin"
             ? "Necesitás una cuenta para contactar a los profesionales."
-            : "Registrate como cliente para contactar profesionales verificados."}
+            : "Para contactar profesionales verificados. "}
+          {mode === "signup" && (
+            <>
+              ¿Sos profesional?{" "}
+              <Link href="/unirse" className="font-medium text-primary underline-offset-4 hover:underline">
+                Aparecé en Breteame
+              </Link>
+              .
+            </>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
