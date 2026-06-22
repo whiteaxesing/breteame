@@ -364,6 +364,94 @@ export async function registrarProfesionalPublico(
 }
 
 /**
+ * Página pública /unirse, modo "Creá tu cuenta": registro self-service del
+ * profesional. Crea el usuario, lo marca role=profesional (requiere el
+ * cliente admin: profiles_update_own ya no permite cambiar role, ver
+ * migración 0010) y crea su anuncio (is_verified queda en false: lo activa
+ * un admin desde /admin, igual que con el resto de los profesionales).
+ */
+export async function registrarProfesionalConCuenta(input: {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  category: CategorySlug;
+  location: string;
+  description: string;
+  honeypot: string;
+}): Promise<ActionResult> {
+  if (input.honeypot) return { ok: true };
+
+  const name = input.name.trim();
+  const email = input.email.trim();
+  const phone = input.phone.trim();
+
+  if (!name || !email || !input.password || !phone) {
+    return { ok: false, error: "Completá todos los campos obligatorios." };
+  }
+  if (!esEmailValido(email)) return { ok: false, error: "Ingresá un correo válido." };
+  if (input.password.length < 6) {
+    return { ok: false, error: "La contraseña debe tener al menos 6 caracteres." };
+  }
+  if (!esTelefonoCRValido(phone)) {
+    return { ok: false, error: "Ingresá un teléfono válido de 8 dígitos." };
+  }
+  if (!isCategorySlug(input.category)) {
+    return { ok: false, error: "Seleccioná un oficio válido." };
+  }
+  if (excedeLimite(name, LIMITES.nombre)) {
+    return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  }
+  if (excedeLimite(input.location, LIMITES.ubicacion)) {
+    return { ok: false, error: `La ubicación no puede superar ${LIMITES.ubicacion} caracteres.` };
+  }
+  if (excedeLimite(input.description, LIMITES.descripcion)) {
+    return { ok: false, error: `La descripción no puede superar ${LIMITES.descripcion} caracteres.` };
+  }
+
+  const admin = createAdminClient();
+
+  // Teléfono único: evita duplicados del mismo profesional
+  const { data: existingPhone } = await admin
+    .from("professionals")
+    .select("id")
+    .eq("phone", phone)
+    .limit(1)
+    .single();
+  if (existingPhone) {
+    return { ok: false, error: "Ese número de teléfono ya está registrado." };
+  }
+
+  // Crea la cuenta con el cliente normal para que quede la sesión en cookies.
+  const supabase = await createClient();
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password: input.password,
+    options: { data: { full_name: name } },
+  });
+  if (signUpError) return falla(signUpError, "registrarProfesionalConCuenta:signup");
+
+  const userId = signUpData.user?.id;
+  if (!userId) {
+    return { ok: false, error: "No se pudo crear la cuenta. Probá de nuevo." };
+  }
+
+  await admin.from("profiles").update({ role: "profesional", full_name: name }).eq("id", userId);
+
+  const { error: proError } = await admin.from("professionals").insert({
+    user_id: userId,
+    name,
+    phone,
+    category: input.category,
+    location: input.location.trim(),
+    description: input.description.trim() || null,
+  });
+  if (proError) return falla(proError, "registrarProfesionalConCuenta:insert");
+
+  return { ok: true };
+}
+
+/**
  * Dashboard del profesional: actualiza los datos de su anuncio público.
  * No recibe el id del cliente: actualiza la fila cuyo user_id es el del usuario
  * autenticado (RLS professionals_update_own lo garantiza), así nadie puede

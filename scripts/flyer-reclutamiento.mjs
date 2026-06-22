@@ -124,13 +124,14 @@ const html = `<!doctype html>
 
     <div class="card">
       <div class="cta-row">
-        <span class="ic-lg">${svg("message", { size: 36 })}</span>
-        <p class="cta-text">Responda a esta historia<br />para más información</p>
-      </div>
-      <p class="or">o entre directo al link</p>
-      <div class="cta-row">
         <span class="ic-lg">${svg("link", { size: 36 })}</span>
-        <p class="url">${urlLabel}</p>
+        <p class="cta-text">Entre al link y cree su cuenta usted mismo</p>
+      </div>
+      <p class="url" style="margin-top:18px">${urlLabel}</p>
+      <p class="or">¿prefiere que lo hagamos por usted?</p>
+      <div class="cta-row">
+        <span class="ic-lg">${svg("message", { size: 36 })}</span>
+        <p class="cta-text">Responda a esta historia<br />y lo activamos nosotros</p>
       </div>
     </div>
 
