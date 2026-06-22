@@ -1,4 +1,4 @@
-import { UnirseFform } from "@/components/unirse-form";
+import { UnirseTabs } from "@/components/unirse-tabs";
 
 export default function UnirsePage() {
   return (
@@ -9,10 +9,10 @@ export default function UnirsePage() {
             Aparezcá en Breteame
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Gratis. Sin complicaciones. Solo llene esto y nosotros lo contactamos.
+            Gratis. Sin complicaciones.
           </p>
         </div>
-        <UnirseFform />
+        <UnirseTabs />
       </div>
     </main>
   );
