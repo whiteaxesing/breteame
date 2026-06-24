@@ -46,3 +46,8 @@ next-env.d.ts
 
 # Panfletos generados (regenerables con scripts/generar-panfletos.mjs)
 /panfletos/
+
+# Pitch deck generado (regenerable con scripts/capturas-pitch.mjs + deck-pdf.mjs)
+/presentacion/shots/
+/presentacion/preview/
+/presentacion/*.pdf

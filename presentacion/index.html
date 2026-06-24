@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Breteame · Pitch</title>
+<style>
+  :root {
+    --brand: #2563eb;
+    --brand-700: #1d4ed8;
+    --brand-900: #1e3a8a;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --bg: #f8fafc;
+    --green: #16a34a;
+    --amber: #d97706;
+    --violet: #7c3aed;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { height: 100%; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink); background: #0b1220; overflow: hidden;
+  }
+
+  /* Escenario 1280x720 escalado a la pantalla */
+  #viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+  #stage { width: 1280px; height: 720px; position: relative; transform-origin: center center; }
+  .slide {
+    position: absolute; inset: 0; background: #fff; overflow: hidden;
+    display: none; flex-direction: column; padding: 64px 72px;
+  }
+  .slide.active { display: flex; }
+
+  /* Navegación */
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(255,255,255,.12); z-index: 30; }
+  #bar > i { display: block; height: 100%; width: 0; background: var(--brand); transition: width .3s ease; }
+  #count { position: fixed; right: 16px; bottom: 14px; z-index: 30; color: rgba(255,255,255,.6); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .hint { position: fixed; left: 16px; bottom: 12px; z-index: 30; color: rgba(255,255,255,.5); font-size: 12px; }
+
+  /* Tipografía / utilidades */
+  h1 { font-size: 60px; line-height: 1.02; letter-spacing: -.03em; font-weight: 800; }
+  h2 { font-size: 40px; line-height: 1.05; letter-spacing: -.02em; font-weight: 800; }
+  h3 { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+  p { font-size: 19px; line-height: 1.5; color: #334155; }
+  .lead { font-size: 23px; color: #475569; }
+  .muted { color: var(--muted); }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--brand); }
+  .row { display: flex; gap: 28px; }
+  .col { flex: 1; min-width: 0; }
+  .grow { flex: 1; }
+  .center { align-items: center; justify-content: center; text-align: center; }
+  .fill { flex: 1; min-height: 0; }
+
+  /* Marca */
+  .brand { display: inline-flex; align-items: center; gap: 14px; }
+  .brand .mark { width: 52px; height: 52px; border-radius: 13px; background: var(--brand); color: #fff; display: grid; place-items: center; }
+  .brand .name { font-size: 30px; font-weight: 800; letter-spacing: -.02em; }
+  .slide .corner { position: absolute; top: 28px; right: 32px; font-size: 13px; font-weight: 700; color: var(--brand); letter-spacing: .04em; }
+
+  /* Chips / pills */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; background: #eff6ff; color: var(--brand-700); }
+
+  /* Tarjetas */
+  .card { border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; background: #fff; }
+  .card .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 12px; }
+  .stat { font-size: 46px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+  .stat + .lbl { margin-top: 6px; font-size: 14px; color: var(--muted); font-weight: 600; }
+
+  /* Marco navegador */
+  .browser { border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 30px 60px -20px rgba(2,8,40,.4); background: #fff; }
+  .browser .bartop { height: 34px; background: #f1f5f9; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-bottom: 1px solid #e2e8f0; }
+  .browser .bartop span { width: 11px; height: 11px; border-radius: 50%; background: #cbd5e1; }
+  .browser .url { margin-left: 12px; font-size: 12px; color: #64748b; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 3px 12px; }
+  .browser .screen { overflow: hidden; background: #fff; }
+  .browser .screen img { width: 100%; display: block; }
+
+  /* Marco teléfono */
+  .phone { width: 210px; border-radius: 30px; padding: 9px; background: #0f172a; box-shadow: 0 30px 50px -18px rgba(2,8,40,.55); position: relative; }
+  .phone .notch { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: 64px; height: 6px; background: #1e293b; border-radius: 999px; z-index: 2; }
+  .phone .pscreen { border-radius: 22px; overflow: hidden; background: #fff; height: 430px; }
+  .phone .pscreen img { width: 100%; display: block; }
+
+  .badge-tag { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; }
+
+  /* Fases */
+  .phase { flex: 1; border-radius: 18px; padding: 22px; border: 1px solid var(--line); position: relative; }
+  .phase .nro { font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .phase h3 { margin: 6px 0 4px; font-size: 20px; }
+  .phase ul { margin: 12px 0 0; padding-left: 18px; }
+  .phase li { font-size: 15px; line-height: 1.45; color: #475569; margin: 5px 0; }
+  .phase .when { font-size: 13px; font-weight: 700; color: var(--muted); }
+
+  ul.checks { list-style: none; padding: 0; }
+  ul.checks li { display: flex; gap: 10px; align-items: flex-start; font-size: 18px; color: #334155; margin: 12px 0; }
+  ul.checks svg { flex: none; margin-top: 2px; }
+
+  .gradient-cover { background: radial-gradient(120% 120% at 0% 0%, #1d4ed8 0%, #1e3a8a 45%, #0b1220 100%); }
+  .soft { background: var(--bg); }
+
+  /* Print: todas las slides apiladas, una por página */
+  @media print { @page { size: 1280px 720px; margin: 0; } }
+  body.print { overflow: visible; background: #fff; }
+  body.print #viewport { position: static; display: block; }
+  body.print #stage { transform: none !important; width: 1280px; height: auto; }
+  body.print .slide { position: static; display: flex !important; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+  body.print .slide:last-child { page-break-after: avoid; break-after: avoid; }
+  body.print #bar, body.print #count, body.print .hint { display: none; }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+  <!-- 1 · Portada -->
+  <section class="slide active gradient-cover" style="color:#fff; padding:0;">
+    <div class="row" style="height:100%; gap:0;">
+      <div class="col" style="padding:72px; display:flex; flex-direction:column; justify-content:center;">
+        <div class="brand"><span class="mark" style="background:#fff; color:var(--brand);"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="name">Breteame</span></div>
+        <h1 style="margin-top:40px; font-size:66px;">El profesional<br>de confianza,<br><span style="color:#93c5fd;">a un mensaje.</span></h1>
+        <p style="color:#dbeafe; font-size:23px; margin-top:22px; max-width:560px;">El directorio que conecta a clientes con profesionales verificados en Costa Rica — y que <b style="color:#fff;">sí arranca</b> el mercado.</p>
+        <div class="chips" style="margin-top:30px;">
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Fontaneros</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Electricistas</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Cerrajeros</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Jardineros</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">+6 oficios</span>
+        </div>
+        <p style="color:#93c5fd; font-size:14px; margin-top:42px; letter-spacing:.04em;">HACKATHON · COSTA RICA · 2026</p>
+      </div>
+      <div class="col" style="position:relative; display:grid; place-items:center;">
+        <div class="phone" style="transform:rotate(3deg) scale(1.18);">
+          <div class="notch"></div><div class="pscreen"><img src="shots/07-home-mobile.png" alt=""></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · Problema -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <span class="kicker">El problema</span>
+    <h2 style="margin-top:14px; max-width:900px;">Encontrar un profesional de confianza es una lotería.</h2>
+    <div class="row" style="margin-top:48px;">
+      <div class="card col">
+        <div class="ic" style="background:#fee2e2; color:#dc2626;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></div>
+        <h3>"¿A quién llamo?"</h3>
+        <p style="margin-top:8px; font-size:16px;">Se necesita un fontanero ya, y la única opción es preguntar en el grupo de WhatsApp del barrio.</p>
+      </div>
+      <div class="card col">
+        <div class="ic" style="background:#fef3c7; color:#d97706;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></div>
+        <h3>"¿Será confiable?"</h3>
+        <p style="margin-top:8px; font-size:16px;">Sin verificación ni referencias, dejás entrar a un desconocido a tu casa y esperás que salga bien.</p>
+      </div>
+      <div class="card col">
+        <div class="ic" style="background:#e0e7ff; color:#4f46e5;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></div>
+        <h3>Recomendaciones que se pierden</h3>
+        <p style="margin-top:8px; font-size:16px;">Los buenos profesionales viven del boca a boca informal. No hay un lugar donde encontrarlos.</p>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:46px;">Hay miles de profesionales excelentes en Costa Rica. <b>El problema no es la oferta — es la <span style="color:var(--brand);">confianza y el descubrimiento</span>.</b></p>
+  </section>
+
+  <!-- 3 · Huevo y la gallina -->
+  <section class="slide soft">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Por qué es difícil</span>
+    <h2 style="margin-top:14px;">Todo marketplace muere por lo mismo.</h2>
+    <div class="row center fill" style="gap:40px; margin-top:10px;">
+      <div class="card" style="width:300px; text-align:center; padding:30px;">
+        <div class="stat" style="color:var(--brand); font-size:36px;">Sin clientes</div>
+        <p style="margin-top:10px;">no entran profesionales…</p>
+      </div>
+      <div style="font-size:54px; color:#94a3b8;">⟳</div>
+      <div class="card" style="width:300px; text-align:center; padding:30px;">
+        <div class="stat" style="color:var(--brand); font-size:36px;">Sin profesionales</div>
+        <p style="margin-top:10px;">no entran clientes.</p>
+      </div>
+    </div>
+    <p class="lead center" style="margin-top:8px;">El problema del <b>huevo y la gallina</b>: nadie quiere ser el primero en un directorio vacío.</p>
+  </section>
+
+  <!-- 4 · Solución -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <div class="row" style="height:100%; align-items:center; gap:48px;">
+      <div class="col" style="max-width:470px;">
+        <span class="kicker">La solución</span>
+        <h2 style="margin-top:14px;">Un directorio que sí arranca.</h2>
+        <ul class="checks" style="margin-top:24px;">
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Verificados.</b> Sello con cédula, referencias y experiencia revisadas.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Contacto directo.</b> WhatsApp o llamada, sin intermediarios ni esperas.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Cerca tuyo.</b> Geolocalización "Cerca de mí" con PostGIS.</span></li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="browser"><div class="bartop"><span></span><span></span><span></span><div class="url">breteame.com</div></div>
+          <div class="screen" style="height:470px;"><img src="shots/01-home-desktop.png" alt=""></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Modo Cliente -->
+  <section class="slide soft">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Modo Cliente</span>
+    <h2 style="margin-top:12px;">Buscás, contactás y queda en tu historial.</h2>
+    <div class="row fill" style="margin-top:26px; gap:32px; align-items:stretch;">
+      <div class="col"><div class="browser" style="height:100%;"><div class="bartop"><span></span><span></span><span></span><div class="url">breteame.com/pro/marvin</div></div>
+        <div class="screen" style="height:360px;"><img src="shots/03-pro-cliente-desktop.png" alt=""></div></div>
+        <p style="margin-top:14px; font-size:16px;"><b>Perfil del profesional:</b> teléfono, WhatsApp, reseñas y portafolio.</p>
+      </div>
+      <div class="col"><div class="browser" style="height:100%;"><div class="bartop"><span></span><span></span><span></span><div class="url">breteame.com/cuenta</div></div>
+        <div class="screen" style="height:360px;"><img src="shots/04-cuenta-desktop.png" alt=""></div></div>
+        <p style="margin-top:14px; font-size:16px;"><b>Su cuenta:</b> historial de contactos, favoritos y reseñas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · Seguridad como diseño -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Diferenciador técnico</span>
+    <h2 style="margin-top:12px;">El teléfono es el recurso protegido.</h2>
+    <p class="lead" style="margin-top:10px; max-width:980px;">El número de teléfono solo se revela a los usuarios que iniciaron sesión. La protección vive dentro de la base de datos misma, así que no se puede burlar desde afuera — y cada contacto queda registrado.</p>
+    <div class="row fill" style="margin-top:24px; gap:40px; align-items:center;">
+      <div class="col" style="text-align:center;">
+        <div class="badge-tag" style="background:#fee2e2; color:#dc2626; margin-bottom:12px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Anónimo · sin teléfono</div>
+        <div class="browser"><div class="bartop"><span></span><span></span><span></span></div><div class="screen" style="height:330px;"><img src="shots/02-pro-anon-desktop.png" alt=""></div></div>
+      </div>
+      <div style="font-size:40px; color:var(--brand);">→</div>
+      <div class="col" style="text-align:center;">
+        <div class="badge-tag" style="background:#dcfce7; color:#15803d; margin-bottom:12px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Logueado · WhatsApp + llamada</div>
+        <div class="browser"><div class="bartop"><span></span><span></span><span></span></div><div class="screen" style="height:330px;"><img src="shots/03-pro-cliente-desktop.png" alt=""></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Modo Profesional -->
+  <section class="slide soft">
+    <span class="corner">Breteame</span>
+    <div class="row" style="height:100%; align-items:center; gap:44px;">
+      <div class="col" style="max-width:430px;">
+        <span class="kicker">Modo Profesional</span>
+        <h2 style="margin-top:12px;">Su negocio, en un panel.</h2>
+        <ul class="checks" style="margin-top:20px; font-size:16px;">
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Quién lo contactó:</b> clientes potenciales con nombre, canal y estado.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Métricas del mes:</b> vistas, contactos y pendientes.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Su anuncio editable</b> + Emergencia 24/7 y Disponible ahora.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Premium:</b> aparecer primero en la búsqueda.</span></li>
+        </ul>
+      </div>
+      <div class="col"><div class="browser"><div class="bartop"><span></span><span></span><span></span><div class="url">breteame.com/dashboard</div></div>
+        <div class="screen" style="height:470px;"><img src="shots/05-dashboard-desktop.png" alt=""></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · Modo Admin -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <div class="row" style="height:100%; align-items:center; gap:44px;">
+      <div class="col"><div class="browser"><div class="bartop"><span></span><span></span><span></span><div class="url">breteame.com/admin</div></div>
+        <div class="screen" style="height:470px;"><img src="shots/06-admin-desktop.png" alt=""></div></div>
+      </div>
+      <div class="col" style="max-width:420px;">
+        <span class="kicker">Modo Admin</span>
+        <h2 style="margin-top:12px;">Control y verificación.</h2>
+        <ul class="checks" style="margin-top:20px; font-size:16px;">
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Métricas globales</b> de la plataforma en vivo.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Verificación de profesionales</b> con un toque — nadie puede auto-verificarse.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Invitaciones</b> con link de acceso de un solo uso.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span><b>Escaneos QR</b> por ferretería/zona.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · Estrategia QR -->
+  <section class="slide soft">
+    <span class="corner">Breteame</span>
+    <div class="row" style="height:100%; align-items:center; gap:48px;">
+      <div class="col" style="max-width:600px;">
+        <span class="kicker">Adquisición</span>
+        <h2 style="margin-top:12px;">Así rompemos el huevo y la gallina.</h2>
+        <p style="margin-top:16px;">Panfletos con <b>QR</b> en <b>ferreterías</b> aliadas y <b>zonas de calle</b>. Donde compran los profesionales y pasan los clientes.</p>
+        <ul class="checks" style="margin-top:18px; font-size:17px;">
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Cada QR apunta a <code>/f/&lt;zona&gt;</code> y <b>cuenta el escaneo</b>.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Atribuye cada contacto a la ferretería o zona de origen.</span></li>
+          <li><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span>Medimos <b>canal calle vs. ferretería</b> por separado.</span></li>
+        </ul>
+        <div class="row" style="margin-top:24px; gap:16px;">
+          <div class="card" style="padding:14px 20px;"><div class="stat" style="font-size:34px; color:var(--brand);">460</div><div class="lbl">escaneos QR</div></div>
+          <div class="card" style="padding:14px 20px;"><div class="stat" style="font-size:34px; color:var(--brand);">43</div><div class="lbl">zonas activas</div></div>
+        </div>
+      </div>
+      <div class="col" style="display:grid; place-items:center;">
+        <div style="border-radius:14px; overflow:hidden; box-shadow:0 30px 60px -20px rgba(2,8,40,.4); border:1px solid #cbd5e1; width:320px;">
+          <img src="shots/13-panfleto.png" style="width:100%; display:block;" alt="">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · Mobile first -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Mobile-first</span>
+    <h2 style="margin-top:12px;">La mayoría busca desde el celular.</h2>
+    <div class="row fill center" style="gap:50px; margin-top:8px;">
+      <div style="text-align:center;"><div class="phone"><div class="notch"></div><div class="pscreen"><img src="shots/07-home-mobile.png" alt=""></div></div><p style="margin-top:12px; font-size:15px;" class="muted">Búsqueda</p></div>
+      <div style="text-align:center;"><div class="phone"><div class="notch"></div><div class="pscreen"><img src="shots/08-pro-cliente-mobile.png" alt=""></div></div><p style="margin-top:12px; font-size:15px;" class="muted">Contacto</p></div>
+      <div style="text-align:center;"><div class="phone"><div class="notch"></div><div class="pscreen"><img src="shots/10-dashboard-mobile.png" alt=""></div></div><p style="margin-top:12px; font-size:15px;" class="muted">Panel del profesional</p></div>
+      <div style="text-align:center;"><div class="phone"><div class="notch"></div><div class="pscreen"><img src="shots/09-cuenta-mobile.png" alt=""></div></div><p style="margin-top:12px; font-size:15px;" class="muted">Cuenta</p></div>
+    </div>
+  </section>
+
+  <!-- 11 · Modelo de negocio -->
+  <section class="slide soft">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Modelo de negocio</span>
+    <h2 style="margin-top:12px;">Rentable por diseño, en fases.</h2>
+    <div class="row" style="margin-top:30px; gap:22px;">
+      <div class="phase" style="border-top:4px solid var(--green);">
+        <div class="nro" style="color:var(--green);">Fase 0 · Hoy</div>
+        <h3>Gratis para todos</h3>
+        <div class="when">Validar el flujo</div>
+        <ul>
+          <li>Infra en el free tier de Supabase + Vercel → costo ≈ <b>$0</b>.</li>
+          <li>QR en ferreterías para poblar el sistema.</li>
+          <li>No cobramos hasta ser útiles.</li>
+        </ul>
+      </div>
+      <div class="phase" style="border-top:4px solid var(--brand);">
+        <div class="nro" style="color:var(--brand);">Fase 1</div>
+        <h3>Suscripción "Destacado"</h3>
+        <div class="when">Cuando la app ya es necesaria</div>
+        <ul>
+          <li>Los profesionales pagan por aparecer primero (Premium).</li>
+          <li>Primer ingreso recurrente.</li>
+          <li>Solo migramos infra cuando el ingreso lo justifica.</li>
+        </ul>
+      </div>
+      <div class="phase" style="border-top:4px solid var(--violet);">
+        <div class="nro" style="color:var(--violet);">Fase 2</div>
+        <h3>Pagos in-app + comisión</h3>
+        <div class="when">Con flujo alto</div>
+        <ul>
+          <li>Pagos electrónicos dentro de la app.</li>
+          <li><b>% por trabajo</b>, modelo Uber/Didi.</li>
+          <li>Monetización atada al volumen real.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lead center" style="margin-top:26px;">El costo de infra <b>solo crece cuando ya estamos cobrando</b>. Nos obliga a migrar únicamente si el uso lo hace rentable.</p>
+  </section>
+
+  <!-- 12 · Por qué ganamos -->
+  <section class="slide">
+    <span class="corner">Breteame</span>
+    <span class="kicker">Por qué ganamos</span>
+    <h2 style="margin-top:12px;">Producto real, funcionando hoy.</h2>
+    <div class="row" style="margin-top:30px; gap:18px;">
+      <div class="card col center"><div class="stat" style="color:var(--brand);">19</div><div class="lbl">profesionales</div></div>
+      <div class="card col center"><div class="stat" style="color:var(--brand);">27</div><div class="lbl">contactos</div></div>
+      <div class="card col center"><div class="stat" style="color:var(--brand);">460</div><div class="lbl">escaneos QR</div></div>
+      <div class="card col center"><div class="stat" style="color:var(--brand);">10</div><div class="lbl">oficios</div></div>
+    </div>
+    <div class="row" style="margin-top:30px; gap:18px;">
+      <div class="card col"><h3>Seguridad como diseño</h3><p style="margin-top:6px; font-size:16px;">La base de datos protege el dato más valioso: el teléfono solo se revela a usuarios logueados.</p></div>
+      <div class="card col"><h3>Stack moderno</h3><p style="margin-top:6px; font-size:16px;">Next.js 16 + React 19, Supabase, PostGIS para geolocalización real.</p></div>
+      <div class="card col"><h3>Motor de adquisición</h3><p style="margin-top:6px; font-size:16px;">QR + atribución de contactos listos para escalar la oferta y la demanda.</p></div>
+    </div>
+    <p style="margin-top:22px; font-size:14px; color:var(--muted); font-style:italic;">Cifras ilustrativas de esta demo — y en la versión en vivo ya estamos recibiendo los primeros contactos reales de clientes.</p>
+  </section>
+
+  <!-- 13 · Cierre + roadmap -->
+  <section class="slide gradient-cover" style="color:#fff;">
+    <div class="row" style="height:100%; align-items:center; gap:48px;">
+      <div class="col" style="max-width:820px; margin:0 auto; text-align:center;">
+        <div class="brand" style="justify-content:center;"><span class="mark" style="background:#fff; color:var(--brand);"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span class="name">Breteame</span></div>
+        <h2 style="margin-top:30px; font-size:52px;">Convertimos el boca a boca<br>en confianza que escala.</h2>
+        <p style="color:#dbeafe; margin-top:22px; font-size:22px;">El cliente encuentra a quién contratar. El profesional, a quién servir. Y Costa Rica, una forma nueva —y confiable— de resolver lo de la casa.</p>
+        <div class="chips" style="margin-top:32px; justify-content:center;">
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Gratis para arrancar</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Rentable al escalar</span>
+          <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Funcionando hoy</span>
+        </div>
+        <p style="color:#93c5fd; margin-top:40px; font-size:15px; letter-spacing:.06em;">breteame.com</p>
+      </div>
+    </div>
+  </section>
+
+</div></div>
+
+<div id="bar"><i></i></div>
+<div id="count"></div>
+<div class="hint">← → para navegar</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let i = 0;
+  const bar = document.querySelector('#bar > i');
+  const count = document.querySelector('#count');
+  function render() {
+    slides.forEach((s, n) => s.classList.toggle('active', n === i));
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    count.textContent = (i + 1) + ' / ' + slides.length;
+  }
+  function go(d) { i = Math.max(0, Math.min(slides.length - 1, i + d)); render(); }
+  addEventListener('keydown', (e) => {
+    if (['ArrowRight', ' ', 'PageDown', 'ArrowDown'].includes(e.key)) { e.preventDefault(); go(1); }
+    else if (['ArrowLeft', 'PageUp', 'ArrowUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    else if (e.key === 'Home') { i = 0; render(); }
+    else if (e.key === 'End') { i = slides.length - 1; render(); }
+  });
+  addEventListener('click', (e) => { if (e.clientX > innerWidth * 0.5) go(1); else go(-1); });
+
+  // Escala el escenario 1280x720 a la pantalla
+  const stage = document.getElementById('stage');
+  function fit() {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  addEventListener('resize', fit); fit();
+
+  // Modo impresión (?print=1): muestra todo apilado para exportar a PDF
+  if (location.search.includes('print')) {
+    document.body.classList.add('print');
+    slides.forEach((s) => s.classList.add('active'));
+  } else { render(); }
+</script>
+</body>
+</html>
