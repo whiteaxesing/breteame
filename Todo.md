@@ -18,3 +18,6 @@
 - [ ] Cambiar el sender de correos de `onboarding@resend.dev` a un dominio propio (comprar dominio → verificar en Resend → actualizar SMTP en Supabase)
 - [ ] Configurar SMTP propio (Resend con dominio verificado) para subir el límite de correos — el plan free de Supabase solo permite 4 por hora, inaceptable en producción
 - [ ] Dashboard avanzado para manejar citas de servicio agendadas, que permitan recordatorio por correo/whatsapp.
+
+## Ideas para mejorar el modelo de negocios
+- [ ] In-web chat para conectar cliente y profesional y evitar fuga de clientes*
