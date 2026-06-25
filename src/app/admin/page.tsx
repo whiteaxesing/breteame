@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   Handshake,
   HardHat,
+  ImageIcon,
   QrCode,
   ShieldAlert,
   Store as StoreIcon,
@@ -19,6 +20,7 @@ import { InvitarProfesionalForm } from "@/components/invitar-profesional-form";
 import { DarAccesoDialog } from "@/components/dar-acceso-dialog";
 import { RegenerarAccesoDialog } from "@/components/regenerar-acceso-dialog";
 import { CopiarEnlaceQR } from "@/components/copiar-enlace-qr";
+import { ModerarFoto } from "@/components/moderar-foto";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { ProfessionalPublic, Store } from "@/lib/types";
+import type { ProfessionalPhoto, ProfessionalPublic, Store } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -77,6 +79,14 @@ export default async function AdminPage() {
   const verificados = pros.length - pendientes;
   const ferreteriasAliadas = stores.filter((s) => s.is_partner).length;
   const totalScans = stores.reduce((sum, s) => sum + s.qr_scans, 0);
+
+  const { data: fotosPendData } = await supabase
+    .from("professional_photos")
+    .select("*")
+    .eq("estado", "pendiente")
+    .order("created_at", { ascending: true });
+  const fotosPendientes = (fotosPendData ?? []) as ProfessionalPhoto[];
+  const nombrePorId = new Map(pros.map((p) => [p.id, p.name]));
 
   return (
     <main className="flex-1">
@@ -135,6 +145,55 @@ export default async function AdminPage() {
           </CardHeader>
           <CardContent>
             <InvitarProfesionalForm />
+          </CardContent>
+        </Card>
+
+        {/* Moderación de fotos */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ImageIcon className="size-4" /> Fotos por revisar
+            </CardTitle>
+            {fotosPendientes.length > 0 && (
+              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                {fotosPendientes.length} pendiente{fotosPendientes.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </CardHeader>
+          <CardContent>
+            {fotosPendientes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No hay fotos por revisar. La IA aprueba o rechaza la mayoría sola;
+                acá solo caen las dudosas.
+              </p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {fotosPendientes.map((foto) => (
+                  <div key={foto.id} className="flex gap-3 rounded-lg border p-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={foto.url}
+                      alt="Foto pendiente"
+                      className="size-24 shrink-0 rounded-md object-cover"
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <p className="truncate text-sm font-medium">
+                        {nombrePorId.get(foto.professional_id) ?? "Profesional"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {foto.tipo === "perfil" ? "Foto de perfil" : "Portafolio"}
+                      </p>
+                      {foto.motivo && (
+                        <p className="mt-1 text-xs text-amber-700">{foto.motivo}</p>
+                      )}
+                      <div className="mt-auto pt-2">
+                        <ModerarFoto photoId={foto.id} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
