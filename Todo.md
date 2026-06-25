@@ -1,23 +1,11 @@
-## Perfil del Profesional (anuncio público)
-- [ ] Subir fotos reales (foto de perfil + trabajos recientes) con Supabase Storage, no depender del seed
-
 ## Cuenta del Profesional (dashboard)
-- [ ] Avisarle al profesional cuando lo contactan (WhatsApp o correo), para que no tenga que entrar al panel a revisar
+- [ ] Avisarle al profesional cuando lo contactan (WhatsApp o correo) — Resend ya está instalado en src/lib/resend.ts, solo falta llamarlo desde registrarContacto
 
-## Admin
-- [ ] Métricas globales de la plataforma (usuarios, contactos, ferreterías) para el pitch
+## Seguridad
+- [ ] Agregar Cloudflare Turnstile en `/unirse` y en el registro de `/login` para reemplazar los honeypots
 
-## Infraestructura / Pulido
-- [ ] Estados de carga y manejo de errores en todas las pantallas
-- [ ] PWA: "Agregar a la pantalla de inicio" como si fuera una app
-
-## Seguridad / Post-hackathon
-- [ ] Agregar Cloudflare Turnstile en `/unirse` y en el registro de `/login` para reemplazar los honeypots — protección real contra bots y scripts automatizados
-
-## Deuda técnica / Post-hackathon
-- [ ] Cambiar el sender de correos de `onboarding@resend.dev` a un dominio propio (comprar dominio → verificar en Resend → actualizar SMTP en Supabase)
-- [ ] Configurar SMTP propio (Resend con dominio verificado) para subir el límite de correos — el plan free de Supabase solo permite 4 por hora, inaceptable en producción
-- [ ] Dashboard avanzado para manejar citas de servicio agendadas, que permitan recordatorio por correo/whatsapp.
+## Deuda técnica
+- [ ] Dashboard avanzado para citas de servicio agendadas con recordatorio por correo/whatsapp
 
 ## Ideas para mejorar el modelo de negocios
-- [ ] In-web chat para conectar cliente y profesional y evitar fuga de clientes*
+- [ ] In-web chat para conectar cliente y profesional y evitar fuga de clientes
