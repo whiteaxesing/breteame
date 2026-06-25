@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { PremiumCheckout } from "@/components/premium-checkout";
 import { CambiarCorreoForm } from "@/components/cambiar-correo-form";
 import { EditarAnuncioForm } from "@/components/editar-anuncio-form";
+import { GestorFotos } from "@/components/gestor-fotos";
 import { LeadStatusSelect } from "@/components/lead-status-select";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import type { Contact, ContactChannel, ProfessionalWithContact } from "@/lib/types";
+import type {
+  Contact,
+  ContactChannel,
+  ProfessionalPhoto,
+  ProfessionalWithContact,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +73,13 @@ export default async function DashboardPage() {
     .eq("professional_id", pro.id)
     .order("created_at", { ascending: false });
   const leads = (leadsData ?? []) as Contact[];
+
+  const { data: photosData } = await supabase
+    .from("professional_photos")
+    .select("*")
+    .eq("professional_id", pro.id)
+    .order("created_at", { ascending: false });
+  const photos = (photosData ?? []) as ProfessionalPhoto[];
 
   const nuevos = leads.filter((l) => l.status === "nuevo").length;
 
@@ -141,6 +154,15 @@ export default async function DashboardPage() {
             Así aparece tu información en Breteame. Cambiá lo que necesités y guardá.
           </p>
           <EditarAnuncioForm pro={pro} />
+        </Card>
+
+        <Card className="space-y-1 p-5">
+          <h2 className="font-semibold">Mis fotos</h2>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Subí tu foto de perfil y fotos de tus trabajos. Cada foto se revisa
+            para mantener Breteame seguro.
+          </p>
+          <GestorFotos userId={session.user.id} photos={photos} />
         </Card>
 
         <PremiumCheckout professionalId={pro.id} initial={pro.is_premium} />
