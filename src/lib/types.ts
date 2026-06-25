@@ -48,6 +48,19 @@ export type ProfessionalPublic = {
   lng: number | null;
 };
 
+export type FotoEstado = "pendiente" | "aprobada" | "rechazada";
+export type FotoTipo = "perfil" | "portafolio";
+export type ProfessionalPhoto = {
+  id: string;
+  professional_id: string;
+  url: string;
+  storage_path: string;
+  tipo: FotoTipo;
+  estado: FotoEstado;
+  motivo: string | null;
+  created_at: string;
+};
+
 // Resultado de profesionales_cerca(): incluye distancia calculada por PostGIS.
 export type ProfessionalResult = ProfessionalPublic & { distancia_km?: number };
 
