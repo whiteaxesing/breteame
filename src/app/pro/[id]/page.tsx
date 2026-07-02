@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Eye, Lock, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { getCategory } from "@/lib/categories";
 import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import {
@@ -24,6 +26,36 @@ export const dynamic = "force-dynamic";
 const isConfigured =
   !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
   !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  if (!isConfigured) return {};
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("professionals_public")
+    .select("name, category, location, description, is_verified")
+    .eq("id", id)
+    .single();
+  if (!data) return {};
+
+  const catLabel = getCategory(data.category)?.label ?? "Profesional";
+  const title = `${data.name} — ${catLabel} en ${data.location}`;
+  const description =
+    data.description?.slice(0, 155) ??
+    `Contactá a ${data.name}, ${catLabel.toLowerCase()} en ${data.location}, Costa Rica, directo por WhatsApp o llamada.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/pro/${id}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function ProfilePage({
   params,
@@ -93,8 +125,37 @@ export default async function ProfilePage({
     }
   }
 
+  // JSON-LD: perfil como negocio local. El teléfono nunca se expone acá,
+  // aunque el visitante esté logueado — es un recurso protegido.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: pro.name,
+    description: pro.description || undefined,
+    url: `https://breteame.com/pro/${pro.id}`,
+    image: pro.image_url || undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: pro.location,
+      addressCountry: "CR",
+    },
+    ...(reviews.length > 0 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: pro.rating,
+        reviewCount: reviews.length,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+  };
+
   return (
     <main className="flex-1">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <RegistrarVista professionalId={pro.id} />
       <div className="mx-auto w-full max-w-4xl px-4 py-6">
         <Link
