@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { LoginForm } from "@/components/login-form";
+
+export const metadata: Metadata = {
+  title: "Iniciar sesión",
+  // El login tiene infinitas variantes por ?next= — no vale la pena indexarlo.
+  robots: { index: false, follow: true },
+};
 
 export default async function LoginPage({
   searchParams,

@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { UnirseTabs } from "@/components/unirse-tabs";
+
+export const metadata: Metadata = {
+  title: "Unite como profesional — conseguí más clientes",
+  description:
+    "Registrate gratis en Breteame y aparecé donde los clientes buscan fontaneros, electricistas, cerrajeros, jardineros y más oficios en Costa Rica.",
+  alternates: { canonical: "/unirse" },
+};
 
 export default function UnirsePage() {
   return (
