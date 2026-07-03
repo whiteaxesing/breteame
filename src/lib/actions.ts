@@ -422,16 +422,24 @@ export async function registrarProfesionalConCuenta(input: {
     return { ok: false, error: "Ese número de teléfono ya está registrado." };
   }
 
-  // Crea la cuenta con el cliente normal para que quede la sesión en cookies.
-  const supabase = await createClient();
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    email,
-    password: input.password,
-    options: { data: { full_name: name } },
-  });
-  if (signUpError) return falla(signUpError, "registrarProfesionalConCuenta:signup");
+  // Usa el cliente admin para crear el usuario de forma síncrona y confirmada,
+  // evitando la race condition donde signUp() devuelve antes de que auth.users
+  // sea visible para inserts FK dependientes.
+  const { data: adminUserData, error: signUpError } =
+    await admin.auth.admin.createUser({
+      email,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: { full_name: name },
+    });
+  if (signUpError) {
+    if ((signUpError as { status?: number }).status === 422) {
+      return { ok: false, error: "Ya existe una cuenta con ese correo." };
+    }
+    return falla(signUpError, "registrarProfesionalConCuenta:signup");
+  }
 
-  const userId = signUpData.user?.id;
+  const userId = adminUserData.user?.id;
   if (!userId) {
     return { ok: false, error: "No se pudo crear la cuenta. Probá de nuevo." };
   }
@@ -447,6 +455,14 @@ export async function registrarProfesionalConCuenta(input: {
     description: input.description.trim() || null,
   });
   if (proError) return falla(proError, "registrarProfesionalConCuenta:insert");
+
+  // Inicia sesión con el cliente normal para que quede la cookie de sesión.
+  const supabase = await createClient();
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password: input.password,
+  });
+  if (signInError) return falla(signInError, "registrarProfesionalConCuenta:signin");
 
   return { ok: true };
 }
