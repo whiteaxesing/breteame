@@ -40,6 +40,7 @@ export type ProfessionalPublic = {
   is_test: boolean;
   is_emergency: boolean;
   is_available_now: boolean;
+  emite_factura: boolean;
   lat: number | null;
   lng: number | null;
 };

@@ -1,4 +1,4 @@
-import { BadgeCheck, Circle, Star, Zap } from "lucide-react";
+import { BadgeCheck, Circle, Receipt, Star, Zap } from "lucide-react";
 import { getCategory } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import type { CategorySlug } from "@/lib/types";
@@ -74,6 +74,19 @@ export function AvailableNowBadge({ className }: { className?: string }) {
       )}
     >
       <Circle className="size-2 fill-current" /> Disponible
+    </span>
+  );
+}
+
+export function FacturaBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-violet-600 px-2 py-0.5 text-xs font-medium text-white",
+        className,
+      )}
+    >
+      <Receipt className="size-3.5" /> Emite factura
     </span>
   );
 }

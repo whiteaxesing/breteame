@@ -513,6 +513,7 @@ export async function actualizarAnuncio(input: {
   description: string;
   isEmergency: boolean;
   isAvailableNow: boolean;
+  emiteFactura: boolean;
 }): Promise<ActionResult> {
   const supabase = await createClient();
 
@@ -551,6 +552,7 @@ export async function actualizarAnuncio(input: {
       description: input.description.trim() || null,
       is_emergency: input.isEmergency,
       is_available_now: input.isAvailableNow,
+      emite_factura: input.emiteFactura,
     })
     .eq("user_id", user.id);
 

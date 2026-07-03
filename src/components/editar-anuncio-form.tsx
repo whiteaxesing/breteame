@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Zap, Clock } from "lucide-react";
+import { Loader2, Zap, Clock, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
   const [description, setDescription] = useState(pro.description ?? "");
   const [isEmergency, setIsEmergency] = useState(pro.is_emergency);
   const [isAvailableNow, setIsAvailableNow] = useState(pro.is_available_now);
+  const [emiteFactura, setEmiteFactura] = useState(pro.emite_factura);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +42,7 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
         description,
         isEmergency,
         isAvailableNow,
+        emiteFactura,
       });
       if (res.ok) {
         toast.success("Guardamos los cambios de tu anuncio");
@@ -152,6 +154,19 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
             </span>
           </span>
           <Switch checked={isAvailableNow} onCheckedChange={setIsAvailableNow} />
+        </label>
+
+        <label className="flex items-center justify-between gap-4">
+          <span className="flex items-start gap-2">
+            <Receipt className="mt-0.5 size-5 shrink-0 text-violet-600" />
+            <span>
+              <span className="block text-base font-medium">Emito factura electrónica</span>
+              <span className="block text-sm text-muted-foreground">
+                Activalo si podés emitir factura a los clientes que la necesiten.
+              </span>
+            </span>
+          </span>
+          <Switch checked={emiteFactura} onCheckedChange={setEmiteFactura} />
         </label>
       </div>
 

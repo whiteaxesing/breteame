@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { ProfessionalAvatar } from "@/components/professional-avatar";
 import {
   CategoryChip,
+  FacturaBadge,
   PremiumBadge,
   RatingStars,
   VerifiedBadge,
@@ -181,6 +182,7 @@ export default async function ProfilePage({
                     <CategoryChip category={pro.category} />
                     {pro.is_verified && <VerifiedBadge />}
                     {pro.is_premium && <PremiumBadge />}
+                    {pro.emite_factura && <FacturaBadge />}
                   </div>
                   <h1 className="text-2xl font-bold tracking-tight">{pro.name}</h1>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
