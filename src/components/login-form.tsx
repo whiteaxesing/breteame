@@ -58,11 +58,6 @@ async function generateNonce(): Promise<[string, string]> {
   return [raw, hashed];
 }
 
-const DEMO_ACCOUNTS = [
-  { label: "Cliente", email: "cliente@demo.cr" },
-  { label: "Profesional", email: "pro@demo.cr" },
-  { label: "Admin", email: "admin@demo.cr" },
-];
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
@@ -283,28 +278,6 @@ export function LoginForm({ next }: { next: string }) {
           </button>
         </p>
 
-        <div className="rounded-lg border bg-muted/40 p-3">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            Cuentas de prueba (contraseña: demo1234)
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {DEMO_ACCOUNTS.map((a) => (
-              <Button
-                key={a.email}
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  setMode("signin");
-                  setEmail(a.email);
-                  setPassword("demo1234");
-                }}
-              >
-                {a.label}
-              </Button>
-            ))}
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
