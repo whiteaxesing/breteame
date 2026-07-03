@@ -422,26 +422,64 @@ export async function registrarProfesionalConCuenta(input: {
     return { ok: false, error: "Ese número de teléfono ya está registrado." };
   }
 
-  // Usa el cliente admin para crear el usuario de forma síncrona y confirmada,
-  // evitando la race condition donde signUp() devuelve antes de que auth.users
-  // sea visible para inserts FK dependientes.
-  const { data: adminUserData, error: signUpError } =
+  const supabase = await createClient();
+
+  // Intenta crear el usuario vía admin (síncrono, confirmado, sin race condition).
+  const { data: adminUserData, error: createError } =
     await admin.auth.admin.createUser({
       email,
       password: input.password,
       email_confirm: true,
       user_metadata: { full_name: name },
     });
-  if (signUpError) {
-    if ((signUpError as { status?: number }).status === 422) {
+
+  let userId: string | undefined;
+
+  if (createError) {
+    const status = (createError as { status?: number }).status;
+    if (status !== 422) {
+      return falla(createError, "registrarProfesionalConCuenta:signup");
+    }
+
+    // El correo ya existe en auth (posiblemente de un intento anterior que falló
+    // a mitad). Intentamos iniciar sesión con las credenciales provistas para
+    // recuperar el ID y completar el registro.
+    const { data: signInData, error: signInError } =
+      await supabase.auth.signInWithPassword({ email, password: input.password });
+
+    if (signInError) {
       return { ok: false, error: "Ya existe una cuenta con ese correo." };
     }
-    return falla(signUpError, "registrarProfesionalConCuenta:signup");
-  }
 
-  const userId = adminUserData.user?.id;
-  if (!userId) {
-    return { ok: false, error: "No se pudo crear la cuenta. Probá de nuevo." };
+    const existingId = signInData.user?.id;
+    if (!existingId) {
+      return { ok: false, error: "Ya existe una cuenta con ese correo." };
+    }
+
+    // Si ya tiene un anuncio de profesional, es un registro real duplicado.
+    const { data: existingPro } = await admin
+      .from("professionals")
+      .select("id")
+      .eq("user_id", existingId)
+      .maybeSingle();
+
+    if (existingPro) {
+      return {
+        ok: false,
+        error: "Ya tenés una cuenta de profesional. Iniciá sesión en breteame.com/login.",
+      };
+    }
+
+    // Cuenta huérfana (auth sin anuncio) — completamos el registro.
+    userId = existingId;
+    // La sesión ya quedó establecida por el signInWithPassword de arriba.
+  } else {
+    userId = adminUserData.user?.id;
+    if (!userId) {
+      return { ok: false, error: "No se pudo crear la cuenta. Probá de nuevo." };
+    }
+    // Inicia sesión para dejar la cookie de sesión.
+    await supabase.auth.signInWithPassword({ email, password: input.password });
   }
 
   await admin.from("profiles").update({ role: "profesional", full_name: name }).eq("id", userId);
@@ -455,14 +493,6 @@ export async function registrarProfesionalConCuenta(input: {
     description: input.description.trim() || null,
   });
   if (proError) return falla(proError, "registrarProfesionalConCuenta:insert");
-
-  // Inicia sesión con el cliente normal para que quede la cookie de sesión.
-  const supabase = await createClient();
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email,
-    password: input.password,
-  });
-  if (signInError) return falla(signInError, "registrarProfesionalConCuenta:signin");
 
   return { ok: true };
 }
