@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { CATEGORIES } from "@/lib/categories";
 import { registrarProfesionalConCuenta } from "@/lib/actions";
+import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
 import type { CategorySlug } from "@/lib/types";
 
 export function UnirseCuentaForm() {
@@ -28,6 +29,7 @@ export function UnirseCuentaForm() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState<CategorySlug | "">("");
+  const [extraCategories, setExtraCategories] = useState<CategorySlug[]>([]);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [honeypot, setHoneypot] = useState("");
@@ -44,6 +46,7 @@ export function UnirseCuentaForm() {
       password,
       phone,
       category: category as CategorySlug,
+      extraCategories,
       location,
       description,
       honeypot,
@@ -130,7 +133,13 @@ export function UnirseCuentaForm() {
 
       <div className="space-y-1.5">
         <Label className="text-base">¿En qué trabaja?</Label>
-        <Select value={category} onValueChange={(v) => setCategory(v as CategorySlug)}>
+        <Select
+          value={category}
+          onValueChange={(v) => {
+            setCategory(v as CategorySlug);
+            setExtraCategories((prev) => prev.filter((s) => s !== v));
+          }}
+        >
           <SelectTrigger className="h-12 text-base">
             <SelectValue placeholder="Seleccione su oficio..." />
           </SelectTrigger>
@@ -143,6 +152,12 @@ export function UnirseCuentaForm() {
           </SelectContent>
         </Select>
       </div>
+
+      <ExtraCategoriasSelector
+        primaryCategory={category}
+        selected={extraCategories}
+        onChange={setExtraCategories}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="uc-location" className="text-base">

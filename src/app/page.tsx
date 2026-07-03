@@ -158,7 +158,7 @@ export default async function HomePage({
       // Búsqueda por proximidad via PostGIS RPC.
       cercaDe = true;
       let query = supabase.rpc("profesionales_cerca", { _lat, _lng, _radio_km: radioKm });
-      if (isCategorySlug(category)) query = query.eq("category", category);
+      if (isCategorySlug(category)) query = query.or(`category.eq.${category},extra_categories.cs.{${category}}`);
       if (emergency === "1") query = query.eq("is_emergency", true);
       if (available === "1") query = query.eq("is_available_now", true);
       const cleanQ = q?.replace(/[,()]/g, " ").trim();
@@ -169,7 +169,7 @@ export default async function HomePage({
     } else {
       // Búsqueda estándar por filtros.
       let query = supabase.from("professionals_public").select("*");
-      if (isCategorySlug(category)) query = query.eq("category", category);
+      if (isCategorySlug(category)) query = query.or(`category.eq.${category},extra_categories.cs.{${category}}`);
       if (location) query = query.ilike("location", `%${location}%`);
       if (emergency === "1") query = query.eq("is_emergency", true);
       if (available === "1") query = query.eq("is_available_now", true);

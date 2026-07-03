@@ -13,6 +13,7 @@ import {
   RatingStars,
   VerifiedBadge,
 } from "@/components/badges";
+import { isCategorySlug } from "@/lib/categories";
 import { ContactButtons } from "@/components/contact-buttons";
 import { ReviewList } from "@/components/review-list";
 import { ReviewForm } from "@/components/review-form";
@@ -180,6 +181,9 @@ export default async function ProfilePage({
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <CategoryChip category={pro.category} />
+                    {pro.extra_categories?.map(
+                      (slug) => isCategorySlug(slug) && <CategoryChip key={slug} category={slug} />,
+                    )}
                     {pro.is_verified && <VerifiedBadge />}
                     {pro.is_premium && <PremiumBadge />}
                     {pro.emite_factura && <FacturaBadge />}

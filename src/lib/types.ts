@@ -41,6 +41,7 @@ export type ProfessionalPublic = {
   is_emergency: boolean;
   is_available_now: boolean;
   emite_factura: boolean;
+  extra_categories: CategorySlug[];
   lat: number | null;
   lng: number | null;
 };

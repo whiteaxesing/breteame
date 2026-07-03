@@ -11,6 +11,7 @@ import {
   VerifiedBadge,
 } from "@/components/badges";
 import { cn } from "@/lib/utils";
+import { isCategorySlug } from "@/lib/categories";
 import type { ProfessionalResult } from "@/lib/types";
 
 export function ProfessionalCard({ pro }: { pro: ProfessionalResult }) {
@@ -41,7 +42,12 @@ export function ProfessionalCard({ pro }: { pro: ProfessionalResult }) {
         </div>
 
         <div className="space-y-2 p-4">
-          <CategoryChip category={pro.category} />
+          <div className="flex flex-wrap gap-1">
+            <CategoryChip category={pro.category} />
+            {pro.extra_categories?.slice(0, 2).map(
+              (slug) => isCategorySlug(slug) && <CategoryChip key={slug} category={slug} />,
+            )}
+          </div>
           <h3 className="font-semibold leading-tight transition group-hover:text-primary">
             {pro.name}
           </h3>

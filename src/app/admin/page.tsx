@@ -175,7 +175,15 @@ export default async function AdminPage() {
                           category={pro.category}
                           className="size-8 rounded-full text-xs"
                         />
-                        <span className="font-medium">{pro.name}</span>
+                        <div>
+                          <span className="block font-medium">{pro.name}</span>
+                          <Link
+                            href={`/admin/pro/${pro.id}/editar`}
+                            className="text-xs text-primary underline-offset-2 hover:underline"
+                          >
+                            Editar
+                          </Link>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

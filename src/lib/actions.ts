@@ -302,6 +302,7 @@ export async function registrarProfesionalPublico(
   location: string,
   description: string,
   honeypot: string,
+  extraCategories: CategorySlug[] = [],
 ): Promise<ActionResult> {
   // Honeypot: si viene con datos es un bot
   if (honeypot) return { ok: true };
@@ -355,6 +356,7 @@ export async function registrarProfesionalPublico(
     name: name.trim(),
     phone: phone.trim(),
     category,
+    extra_categories: extraCategories.filter((s) => s !== category),
     location: location.trim(),
     description: description.trim() || null,
   });
@@ -376,6 +378,7 @@ export async function registrarProfesionalConCuenta(input: {
   password: string;
   phone: string;
   category: CategorySlug;
+  extraCategories: CategorySlug[];
   location: string;
   description: string;
   honeypot: string;
@@ -489,6 +492,7 @@ export async function registrarProfesionalConCuenta(input: {
     name,
     phone,
     category: input.category,
+    extra_categories: input.extraCategories.filter((s) => s !== input.category),
     location: input.location.trim(),
     description: input.description.trim() || null,
   });
@@ -508,6 +512,7 @@ export async function registrarProfesionalConCuenta(input: {
 export async function actualizarAnuncio(input: {
   name: string;
   category: CategorySlug;
+  extraCategories: CategorySlug[];
   location: string;
   phone: string;
   description: string;
@@ -547,6 +552,7 @@ export async function actualizarAnuncio(input: {
     .update({
       name,
       category: input.category,
+      extra_categories: input.extraCategories.filter((s) => s !== input.category),
       location: input.location.trim(),
       phone,
       description: input.description.trim() || null,
@@ -696,6 +702,58 @@ export async function dejarResena(
   }
 
   revalidatePath(`/pro/${professionalId}`);
+  return { ok: true };
+}
+
+/** Panel de admin: edita cualquier anuncio (bypassa RLS con el cliente admin). */
+export async function actualizarAnuncioAdmin(
+  proId: string,
+  input: {
+    name: string;
+    category: CategorySlug;
+    extraCategories: CategorySlug[];
+    location: string;
+    phone: string;
+    description: string;
+    isEmergency: boolean;
+    isAvailableNow: boolean;
+    emiteFactura: boolean;
+  },
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  const { getCurrentUser } = await import("@/lib/auth");
+  const session = await getCurrentUser();
+  if (session?.profile?.role !== "admin") return { ok: false, error: "Solo los admins pueden hacer esto." };
+
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+  if (!name) return { ok: false, error: "El nombre no puede quedar vacío." };
+  if (!isCategorySlug(input.category)) return { ok: false, error: "Categoría inválida." };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("professionals")
+    .update({
+      name,
+      category: input.category,
+      extra_categories: input.extraCategories.filter((s) => s !== input.category),
+      location: input.location.trim(),
+      phone: phone || null,
+      description: input.description.trim() || null,
+      is_emergency: input.isEmergency,
+      is_available_now: input.isAvailableNow,
+      emite_factura: input.emiteFactura,
+    })
+    .eq("id", proId);
+
+  if (error) return falla(error);
+
+  revalidatePath(`/pro/${proId}`);
+  revalidatePath("/admin");
+  revalidatePath("/");
   return { ok: true };
 }
 

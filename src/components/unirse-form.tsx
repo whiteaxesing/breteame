@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { CATEGORIES } from "@/lib/categories";
 import { registrarProfesionalPublico } from "@/lib/actions";
+import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
 import type { CategorySlug } from "@/lib/types";
 
 export function UnirseFform() {
@@ -25,6 +26,7 @@ export function UnirseFform() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [category, setCategory] = useState<CategorySlug | "">("");
+  const [extraCategories, setExtraCategories] = useState<CategorySlug[]>([]);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [honeypot, setHoneypot] = useState("");
@@ -34,7 +36,7 @@ export function UnirseFform() {
     if (!category) return;
     setError(null);
     startTransition(async () => {
-      const res = await registrarProfesionalPublico(name, phone, category as CategorySlug, location, description, honeypot);
+      const res = await registrarProfesionalPublico(name, phone, category as CategorySlug, location, description, honeypot, extraCategories);
       if (res.ok) {
         setDone(true);
       } else {
@@ -99,7 +101,13 @@ export function UnirseFform() {
 
       <div className="space-y-1.5">
         <Label className="text-base">¿En qué trabaja?</Label>
-        <Select value={category} onValueChange={(v) => setCategory(v as CategorySlug)}>
+        <Select
+          value={category}
+          onValueChange={(v) => {
+            setCategory(v as CategorySlug);
+            setExtraCategories((prev) => prev.filter((s) => s !== v));
+          }}
+        >
           <SelectTrigger className="h-12 text-base">
             <SelectValue placeholder="Seleccione su oficio..." />
           </SelectTrigger>
@@ -112,6 +120,12 @@ export function UnirseFform() {
           </SelectContent>
         </Select>
       </div>
+
+      <ExtraCategoriasSelector
+        primaryCategory={category}
+        selected={extraCategories}
+        onChange={setExtraCategories}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="u-location" className="text-base">
