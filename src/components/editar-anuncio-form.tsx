@@ -18,6 +18,7 @@ import {
 import { CATEGORIES } from "@/lib/categories";
 import { actualizarAnuncio } from "@/lib/actions";
 import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
+import { LocationSelector } from "@/components/location-selector";
 import type { CategorySlug, ProfessionalWithContact } from "@/lib/types";
 
 export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
@@ -26,6 +27,8 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
   const [name, setName] = useState(pro.name);
   const [category, setCategory] = useState<CategorySlug>(pro.category);
   const [location, setLocation] = useState(pro.location);
+  const [lat, setLat] = useState<number | null>(pro.lat ?? null);
+  const [lng, setLng] = useState<number | null>(pro.lng ?? null);
   const [phone, setPhone] = useState(pro.phone ?? "");
   const [description, setDescription] = useState(pro.description ?? "");
   const [isEmergency, setIsEmergency] = useState(pro.is_emergency);
@@ -46,6 +49,8 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
         isEmergency,
         isAvailableNow,
         emiteFactura,
+        lat,
+        lng,
       });
       if (res.ok) {
         toast.success("Guardamos los cambios de tu anuncio");
@@ -99,16 +104,15 @@ export function EditarAnuncioForm({ pro }: { pro: ProfessionalWithContact }) {
         onChange={setExtraCategories}
       />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="e-location" className="text-base">
-          ¿En qué zona trabajás?
-        </Label>
-        <Input
-          id="e-location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Ej: San José, Alajuela, Heredia..."
-          className="h-12 text-base"
+      <div className="space-y-2">
+        <Label className="text-base">¿En qué zona trabajás?</Label>
+        <LocationSelector
+          defaultLocation={pro.location}
+          onChange={(loc, newLat, newLng) => {
+            setLocation(loc);
+            setLat(newLat);
+            setLng(newLng);
+          }}
         />
       </div>
 

@@ -16,6 +16,7 @@ import {
 import { CATEGORIES } from "@/lib/categories";
 import { registrarProfesionalPublico } from "@/lib/actions";
 import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
+import { LocationSelector } from "@/components/location-selector";
 import type { CategorySlug } from "@/lib/types";
 
 export function UnirseFform() {
@@ -28,6 +29,8 @@ export function UnirseFform() {
   const [category, setCategory] = useState<CategorySlug | "">("");
   const [extraCategories, setExtraCategories] = useState<CategorySlug[]>([]);
   const [location, setLocation] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
   const [description, setDescription] = useState("");
   const [honeypot, setHoneypot] = useState("");
 
@@ -36,7 +39,7 @@ export function UnirseFform() {
     if (!category) return;
     setError(null);
     startTransition(async () => {
-      const res = await registrarProfesionalPublico(name, phone, category as CategorySlug, location, description, honeypot, extraCategories);
+      const res = await registrarProfesionalPublico(name, phone, category as CategorySlug, location, description, honeypot, extraCategories, lat, lng);
       if (res.ok) {
         setDone(true);
       } else {
@@ -127,16 +130,14 @@ export function UnirseFform() {
         onChange={setExtraCategories}
       />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="u-location" className="text-base">
-          ¿En qué zona trabaja?
-        </Label>
-        <Input
-          id="u-location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Ej: San José, Alajuela, Heredia..."
-          className="h-12 text-base"
+      <div className="space-y-2">
+        <Label className="text-base">¿En qué zona trabaja?</Label>
+        <LocationSelector
+          onChange={(loc, newLat, newLng) => {
+            setLocation(loc);
+            setLat(newLat);
+            setLng(newLng);
+          }}
         />
       </div>
 

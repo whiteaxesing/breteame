@@ -19,6 +19,7 @@ import {
 import { CATEGORIES } from "@/lib/categories";
 import { actualizarAnuncioAdmin } from "@/lib/actions";
 import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
+import { LocationSelector } from "@/components/location-selector";
 import type { CategorySlug } from "@/lib/types";
 
 // ProfessionalPublic + phone (leído con admin client en la página)
@@ -33,6 +34,8 @@ interface ProConPhone {
   is_emergency: boolean;
   is_available_now: boolean;
   emite_factura: boolean;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export function EditarAnuncioAdminForm({ pro }: { pro: ProConPhone }) {
@@ -43,6 +46,8 @@ export function EditarAnuncioAdminForm({ pro }: { pro: ProConPhone }) {
   const [category, setCategory] = useState<CategorySlug>(pro.category);
   const [extraCategories, setExtraCategories] = useState<CategorySlug[]>(pro.extra_categories ?? []);
   const [location, setLocation] = useState(pro.location);
+  const [lat, setLat] = useState<number | null>(pro.lat ?? null);
+  const [lng, setLng] = useState<number | null>(pro.lng ?? null);
   const [phone, setPhone] = useState(pro.phone ?? "");
   const [description, setDescription] = useState(pro.description ?? "");
   const [isEmergency, setIsEmergency] = useState(pro.is_emergency);
@@ -62,6 +67,8 @@ export function EditarAnuncioAdminForm({ pro }: { pro: ProConPhone }) {
         isEmergency,
         isAvailableNow,
         emiteFactura,
+        lat,
+        lng,
       });
       if (res.ok) {
         toast.success("Anuncio actualizado");
@@ -113,13 +120,15 @@ export function EditarAnuncioAdminForm({ pro }: { pro: ProConPhone }) {
         onChange={setExtraCategories}
       />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="a-location" className="text-base">Zona</Label>
-        <Input
-          id="a-location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="h-12 text-base"
+      <div className="space-y-2">
+        <Label className="text-base">Zona</Label>
+        <LocationSelector
+          defaultLocation={pro.location}
+          onChange={(loc, newLat, newLng) => {
+            setLocation(loc);
+            setLat(newLat);
+            setLng(newLng);
+          }}
         />
       </div>
 

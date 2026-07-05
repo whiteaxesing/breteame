@@ -12,7 +12,8 @@ export type CategorySlug =
   | "carpinteria"
   | "ebanisteria"
   | "limpieza"
-  | "piscinas";
+  | "piscinas"
+  | "hojalateria";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 

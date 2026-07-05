@@ -303,6 +303,8 @@ export async function registrarProfesionalPublico(
   description: string,
   honeypot: string,
   extraCategories: CategorySlug[] = [],
+  lat?: number | null,
+  lng?: number | null,
 ): Promise<ActionResult> {
   // Honeypot: si viene con datos es un bot
   if (honeypot) return { ok: true };
@@ -359,6 +361,7 @@ export async function registrarProfesionalPublico(
     extra_categories: extraCategories.filter((s) => s !== category),
     location: location.trim(),
     description: description.trim() || null,
+    ...(lat != null && lng != null ? { lat, lng } : {}),
   });
 
   if (error) return falla(error);
@@ -382,6 +385,8 @@ export async function registrarProfesionalConCuenta(input: {
   location: string;
   description: string;
   honeypot: string;
+  lat?: number | null;
+  lng?: number | null;
 }): Promise<ActionResult> {
   if (input.honeypot) return { ok: true };
 
@@ -495,6 +500,7 @@ export async function registrarProfesionalConCuenta(input: {
     extra_categories: input.extraCategories.filter((s) => s !== input.category),
     location: input.location.trim(),
     description: input.description.trim() || null,
+    ...(input.lat != null && input.lng != null ? { lat: input.lat, lng: input.lng } : {}),
   });
   if (proError) return falla(proError, "registrarProfesionalConCuenta:insert");
 
@@ -519,6 +525,8 @@ export async function actualizarAnuncio(input: {
   isEmergency: boolean;
   isAvailableNow: boolean;
   emiteFactura: boolean;
+  lat?: number | null;
+  lng?: number | null;
 }): Promise<ActionResult> {
   const supabase = await createClient();
 
@@ -559,6 +567,7 @@ export async function actualizarAnuncio(input: {
       is_emergency: input.isEmergency,
       is_available_now: input.isAvailableNow,
       emite_factura: input.emiteFactura,
+      ...(input.lat != null && input.lng != null ? { lat: input.lat, lng: input.lng } : {}),
     })
     .eq("user_id", user.id);
 
@@ -718,6 +727,8 @@ export async function actualizarAnuncioAdmin(
     isEmergency: boolean;
     isAvailableNow: boolean;
     emiteFactura: boolean;
+    lat?: number | null;
+    lng?: number | null;
   },
 ): Promise<ActionResult> {
   const supabase = await createClient();
@@ -746,6 +757,7 @@ export async function actualizarAnuncioAdmin(
       is_emergency: input.isEmergency,
       is_available_now: input.isAvailableNow,
       emite_factura: input.emiteFactura,
+      ...(input.lat != null && input.lng != null ? { lat: input.lat, lng: input.lng } : {}),
     })
     .eq("id", proId);
 

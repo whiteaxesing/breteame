@@ -17,6 +17,7 @@ import {
 import { CATEGORIES } from "@/lib/categories";
 import { registrarProfesionalConCuenta } from "@/lib/actions";
 import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
+import { LocationSelector } from "@/components/location-selector";
 import type { CategorySlug } from "@/lib/types";
 
 export function UnirseCuentaForm() {
@@ -31,6 +32,8 @@ export function UnirseCuentaForm() {
   const [category, setCategory] = useState<CategorySlug | "">("");
   const [extraCategories, setExtraCategories] = useState<CategorySlug[]>([]);
   const [location, setLocation] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
   const [description, setDescription] = useState("");
   const [honeypot, setHoneypot] = useState("");
 
@@ -50,6 +53,8 @@ export function UnirseCuentaForm() {
       location,
       description,
       honeypot,
+      lat,
+      lng,
     });
 
     if (!res.ok) {
@@ -159,16 +164,14 @@ export function UnirseCuentaForm() {
         onChange={setExtraCategories}
       />
 
-      <div className="space-y-1.5">
-        <Label htmlFor="uc-location" className="text-base">
-          ¿En qué zona trabaja?
-        </Label>
-        <Input
-          id="uc-location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Ej: San José, Alajuela, Heredia..."
-          className="h-12 text-base"
+      <div className="space-y-2">
+        <Label className="text-base">¿En qué zona trabaja?</Label>
+        <LocationSelector
+          onChange={(loc, newLat, newLng) => {
+            setLocation(loc);
+            setLat(newLat);
+            setLng(newLng);
+          }}
         />
       </div>
 

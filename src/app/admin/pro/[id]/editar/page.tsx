@@ -23,7 +23,7 @@ export default async function AdminEditarProPage({
   const { data, error } = await admin
     .from("professionals")
     .select(
-      "id, name, category, extra_categories, location, phone, description, is_emergency, is_available_now, emite_factura",
+      "id, name, category, extra_categories, location, phone, description, is_emergency, is_available_now, emite_factura, lat, lng",
     )
     .eq("id", id)
     .single();
@@ -58,6 +58,8 @@ export default async function AdminEditarProPage({
                 is_emergency: data.is_emergency,
                 is_available_now: data.is_available_now,
                 emite_factura: data.emite_factura,
+                lat: data.lat ?? null,
+                lng: data.lng ?? null,
               }}
             />
           </CardContent>

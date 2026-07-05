@@ -10,6 +10,7 @@ import {
   Armchair,
   Sparkles,
   Waves,
+  CloudRain,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -129,6 +130,15 @@ export const CATEGORIES: Category[] = [
     chip: "bg-cyan-100 text-cyan-700",
     solid: "bg-cyan-600",
     accent: "text-cyan-600",
+  },
+  {
+    slug: "hojalateria",
+    label: "Hojalatería",
+    tagline: "Canoas, bajantes, lumbreras y techos",
+    icon: CloudRain,
+    chip: "bg-slate-100 text-slate-700",
+    solid: "bg-slate-600",
+    accent: "text-slate-600",
   },
 ];
 
