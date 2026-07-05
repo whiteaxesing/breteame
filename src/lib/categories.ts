@@ -11,6 +11,7 @@ import {
   Sparkles,
   Waves,
   CloudRain,
+  HardHat,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -139,6 +140,15 @@ export const CATEGORIES: Category[] = [
     chip: "bg-slate-100 text-slate-700",
     solid: "bg-slate-600",
     accent: "text-slate-600",
+  },
+  {
+    slug: "maestro_obra",
+    label: "Maestro de obra",
+    tagline: "Construcción, remodelación y acabados",
+    icon: HardHat,
+    chip: "bg-yellow-100 text-yellow-800",
+    solid: "bg-yellow-600",
+    accent: "text-yellow-700",
   },
 ];
 

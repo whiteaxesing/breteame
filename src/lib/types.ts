@@ -13,7 +13,8 @@ export type CategorySlug =
   | "ebanisteria"
   | "limpieza"
   | "piscinas"
-  | "hojalateria";
+  | "hojalateria"
+  | "maestro_obra";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 
