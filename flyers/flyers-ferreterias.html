@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flyers Breteame — Ferreterías</title>
+<style>
+  :root {
+    --azul: #1c6fd2;
+    --azul-osc: #0f4c9e;
+    --tinta: #16181d;
+    --gris: #5a6170;
+    --celeste: #e9f1fc;
+    --papel: #ffffff;
+    /* chrome de pantalla */
+    --fondo: #eef1f6;
+    --chrome-texto: #16181d;
+    --chrome-muted: #5a6170;
+    --chrome-card: #ffffff;
+    --chrome-borde: #d9dee8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #14161b;
+      --chrome-texto: #e8eaf0;
+      --chrome-muted: #9aa1b0;
+      --chrome-card: #1d2027;
+      --chrome-borde: #2e323c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fondo: #14161b;
+    --chrome-texto: #e8eaf0;
+    --chrome-muted: #9aa1b0;
+    --chrome-card: #1d2027;
+    --chrome-borde: #2e323c;
+  }
+  :root[data-theme="light"] {
+    --fondo: #eef1f6;
+    --chrome-texto: #16181d;
+    --chrome-muted: #5a6170;
+    --chrome-card: #ffffff;
+    --chrome-borde: #d9dee8;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--chrome-texto);
+    font-family: "Avenir Next", "Segoe UI", -apple-system, Helvetica, Arial, sans-serif;
+  }
+
+  /* ---------- Guía en pantalla (no se imprime) ---------- */
+  .guia {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 0.5rem;
+  }
+  .guia h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+  }
+  .guia p { color: var(--chrome-muted); line-height: 1.55; margin: 0.4rem 0; max-width: 65ch; }
+  .guia .pasos {
+    display: flex; flex-wrap: wrap; gap: 0.75rem;
+    margin: 1rem 0 0.5rem; padding: 0; list-style: none;
+  }
+  .guia .pasos li {
+    background: var(--chrome-card);
+    border: 1px solid var(--chrome-borde);
+    border-radius: 0.6rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  .guia .btn-imprimir {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 1rem;
+    background: var(--azul); color: #fff;
+    border: none; border-radius: 0.6rem;
+    padding: 0.65rem 1.2rem;
+    font: inherit; font-weight: 700; font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .guia .btn-imprimir:hover { background: var(--azul-osc); }
+  .guia .btn-imprimir:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+
+  .mesa {
+    display: flex; flex-direction: column; align-items: center; gap: 2rem;
+    padding: 2rem 1rem 4rem;
+    overflow-x: auto;
+  }
+  .etiqueta-hoja {
+    align-self: center;
+    font-size: 0.78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.09em;
+    color: var(--chrome-muted);
+    margin-bottom: -1.25rem;
+  }
+
+  /* ---------- Hojas carta ---------- */
+  .hoja {
+    width: 8.5in;
+    height: 11in;
+    background: var(--papel);
+    color: var(--tinta);
+    box-shadow: 0 6px 30px rgba(10, 20, 40, 0.18);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===== Diseño A: flyer media carta, 2 por hoja ===== */
+  .mitad {
+    height: 5.5in;
+    display: flex;
+    padding: 0.42in 0.45in;
+    gap: 0.35in;
+  }
+  .mitad + .mitad { border-top: 1.5px dashed #b7bec9; position: relative; }
+  .marca-corte {
+    position: absolute; top: -0.62em; left: 0.45in;
+    background: var(--papel);
+    padding: 0 0.35em;
+    font-size: 0.62rem; color: #98a0ad;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .col-copy { flex: 1.35; display: flex; flex-direction: column; }
+  .logo { display: flex; align-items: center; gap: 0.4rem; }
+  .logo .cubo {
+    width: 0.34in; height: 0.34in;
+    background: var(--azul); border-radius: 0.09in;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo .cubo svg { width: 58%; height: 58%; stroke: #fff; }
+  .logo .nombre { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+
+  .chip-verificados {
+    align-self: flex-start;
+    margin-top: 0.55rem;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: var(--celeste); color: var(--azul-osc);
+    border-radius: 999px;
+    padding: 0.22rem 0.7rem;
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+  }
+  .chip-verificados svg { width: 0.8em; height: 0.8em; stroke: var(--azul-osc); }
+
+  .mitad h2 {
+    margin: 0.55rem 0 0;
+    font-size: 1.72rem; font-weight: 800;
+    letter-spacing: -0.025em; line-height: 1.12;
+    text-wrap: balance;
+  }
+  .mitad h2 em { font-style: normal; color: var(--azul); }
+  .oficios {
+    margin: 0.5rem 0 0;
+    font-size: 0.86rem; color: var(--gris); line-height: 1.5;
+  }
+  .oficios strong { color: var(--tinta); font-weight: 700; }
+
+  .como {
+    margin: auto 0 0;
+    display: flex; flex-direction: column; gap: 0.42rem;
+    padding-top: 0.5rem;
+  }
+  .paso { display: flex; align-items: baseline; gap: 0.55rem; font-size: 0.9rem; }
+  .paso .n {
+    flex-shrink: 0;
+    width: 1.25em; height: 1.25em;
+    border-radius: 50%;
+    background: var(--azul); color: #fff;
+    font-size: 0.78rem; font-weight: 800;
+    display: inline-flex; align-items: center; justify-content: center;
+    transform: translateY(0.18em);
+  }
+  .paso b { font-weight: 700; }
+
+  .aliado {
+    margin-top: 0.55rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid #e4e8ee;
+    font-size: 0.74rem; color: var(--gris);
+  }
+  .aliado strong { color: var(--tinta); }
+
+  .col-qr {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: var(--celeste);
+    border-radius: 0.18in;
+    padding: 0.28in 0.2in;
+    text-align: center;
+  }
+  .col-qr .escanea {
+    font-size: 0.8rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--azul-osc);
+  }
+  .marco-qr {
+    background: #fff;
+    border-radius: 0.12in;
+    padding: 0.12in;
+    margin: 0.16in 0 0.14in;
+    box-shadow: 0 1px 0 rgba(15, 76, 158, 0.15);
+  }
+  .marco-qr svg { display: block; width: 1.85in; height: 1.85in; }
+  .col-qr .url { font-size: 0.9rem; font-weight: 800; letter-spacing: -0.01em; }
+  .col-qr .gratis { margin-top: 0.3rem; font-size: 0.72rem; color: var(--azul-osc); font-weight: 600; }
+
+  /* ===== Diseño B: rótulo carta para mostrador / caja ===== */
+  .rotulo {
+    padding: 0.55in 0.6in 0;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .rotulo .logo { margin-bottom: 0.28in; }
+  .rotulo .logo .cubo { width: 0.42in; height: 0.42in; border-radius: 0.11in; }
+  .rotulo .logo .nombre { font-size: 1.7rem; }
+
+  .rotulo h2 {
+    margin: 0;
+    font-size: 2.65rem; font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1.08;
+    text-wrap: balance;
+    max-width: 7in;
+  }
+  .rotulo h2 em { font-style: normal; color: var(--azul); }
+  .rotulo .sub {
+    margin: 0.22in 0 0;
+    font-size: 1.15rem; color: var(--gris); line-height: 1.45;
+    max-width: 6in;
+  }
+
+  .rotulo .marco-qr {
+    margin: 0.34in 0 0.18in;
+    padding: 0.22in;
+    border: 3px solid var(--azul);
+    border-radius: 0.2in;
+    box-shadow: none;
+  }
+  .rotulo .marco-qr svg { width: 3.9in; height: 3.9in; }
+  .rotulo .escanea-grande {
+    font-size: 1.15rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--azul-osc);
+  }
+
+  .franja {
+    margin-top: auto;
+    background: var(--azul);
+    color: #fff;
+    width: 100%;
+    padding: 0.26in 0.6in;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.3in;
+    font-size: 0.95rem; font-weight: 700;
+  }
+  .franja .url-grande { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+  .franja .datos { display: flex; gap: 0.22in; font-weight: 600; font-size: 0.85rem; opacity: 0.95; }
+
+  /* ---------- Impresión ---------- */
+  @page { size: letter; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .guia, .etiqueta-hoja { display: none; }
+    .mesa { display: block; padding: 0; overflow: visible; }
+    .hoja { box-shadow: none; break-after: page; }
+    .hoja:last-child { break-after: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="guia">
+  <h1>Flyers con QR para ferreterías</h1>
+  <p>Cuatro hojas tamaño carta listas para llevar a la papelería: un flyer media carta (salen 2 por hoja, se corta por la línea punteada) y un rótulo grande para pegar en la caja o el mostrador — uno de cada uno para <strong>El Colono</strong> y <strong>Almacenes Coopelesca</strong>.</p>
+  <p>Cada QR apunta a su enlace de tienda (<code>breteame.com/f/el-colono</code> y <code>breteame.com/f/coopelesca</code>), así cada escaneo queda registrado por ferretería en el admin.</p>
+  <ul class="pasos">
+    <li>🖨️ Imprimí en <strong>papel carta</strong>, escala 100% (sin “ajustar a página”)</li>
+    <li>✂️ El flyer se corta a la mitad por la línea punteada</li>
+    <li>⬛ Funciona igual en blanco y negro si querés abaratar</li>
+  </ul>
+  <button type="button" class="btn-imprimir" onclick="window.print()">Imprimir / Guardar PDF</button>
+</div>
+
+<div class="mesa">
+
+  <!-- ============ HOJA 1: Flyer media carta — El Colono ============ -->
+  <span class="etiqueta-hoja">Hoja 1 · Flyer media carta · El Colono</span>
+  <section class="hoja">
+    <div class="mitad">
+      <div class="col-copy">
+        <div class="logo">
+          <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+          <span class="nombre">Breteame</span>
+        </div>
+        <span class="chip-verificados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Profesionales verificados</span>
+        <h2>¿Ocupás un <em>fontanero</em>, electricista o cerrajero de confianza?</h2>
+        <p class="oficios"><strong>Fontanería · Electricidad · Cerrajería · Jardinería · Pintura</strong> y 9 oficios más, cerca tuyo.</p>
+        <div class="como">
+          <div class="paso"><span class="n">1</span><span><b>Escaneá el código</b> con la cámara del cel</span></div>
+          <div class="paso"><span class="n">2</span><span><b>Elegí un profesional</b> verificado en tu zona</span></div>
+          <div class="paso"><span class="n">3</span><span><b>Escribile directo</b> por WhatsApp o llamalo</span></div>
+        </div>
+        <p class="aliado">Disponible gracias a tu ferretería <strong>El Colono</strong></p>
+      </div>
+      <div class="col-qr">
+        <span class="escanea">Escaneá aquí</span>
+        <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#000000" d="M4 4.5h7m2 0h1m1 0h1m1 0h3m1 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h1m1 0h5m6 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h4m3 0h1m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h3m1 0h3m4 0h1m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m3 0h1m1 0h1m2 0h1m6 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h1m1 0h2m1 0h3m4 0h1M5 12.5h1m1 0h4m1 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h2m1 0h2m1 0h1M4 13.5h3m2 0h1m1 0h4m7 0h2m4 0h1m1 0h2M4 14.5h1m1 0h1m1 0h1m1 0h5m2 0h2m2 0h1m3 0h3m1 0h1M6 15.5h1m6 0h5m3 0h2m1 0h1m3 0h2m2 0h1M4 16.5h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h3m4 0h2m2 0h1m1 0h1M8 17.5h2m2 0h3m2 0h1m2 0h3m3 0h1m1 0h1m1 0h1m1 0h1M4 18.5h1m4 0h5m2 0h1m3 0h1m2 0h1m3 0h1m1 0h1m2 0h1M4 19.5h1m2 0h1m1 0h1m2 0h2m1 0h6m1 0h4m2 0h3M4 20.5h3m2 0h2m1 0h1m3 0h4m4 0h1m2 0h1m1 0h1m2 0h1M4 21.5h1m2 0h2m3 0h2m2 0h1m1 0h1m1 0h4m4 0h3M4 22.5h3m1 0h4m2 0h1m2 0h3m1 0h1m1 0h2m7 0h1M4 23.5h2m1 0h1m5 0h3m1 0h1m1 0h2m2 0h1m1 0h3m2 0h1M4 24.5h2m3 0h2m1 0h2m1 0h1m4 0h2m2 0h9M12 25.5h3m1 0h2m1 0h1m1 0h2m1 0h1m3 0h3M4 26.5h7m2 0h2m2 0h1m1 0h2m2 0h2m1 0h1m1 0h1m1 0h2M4 27.5h1m5 0h1m1 0h1m3 0h3m2 0h1m1 0h2m3 0h2m1 0h2M4 28.5h1m1 0h3m1 0h1m1 0h7m1 0h1m2 0h6m3 0h1M4 29.5h1m1 0h3m1 0h1m1 0h2m4 0h3m1 0h1m4 0h1m4 0h1M4 30.5h1m1 0h3m1 0h1m3 0h2m2 0h3m1 0h1m1 0h2m1 0h2m2 0h2M4 31.5h1m5 0h1m1 0h2m1 0h1m3 0h1m5 0h2m1 0h1m1 0h1m1 0h1M4 32.5h7m4 0h1m2 0h1m4 0h2m2 0h2"/></svg></span>
+        <span class="url">breteame.com</span>
+        <span class="gratis">Gratis · Sin apps · Sin registro para buscar</span>
+      </div>
+    </div>
+    <div class="mitad">
+      <span class="marca-corte">✂ cortá aquí</span>
+      <div class="col-copy">
+        <div class="logo">
+          <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+          <span class="nombre">Breteame</span>
+        </div>
+        <span class="chip-verificados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Profesionales verificados</span>
+        <h2>¿Ocupás un <em>fontanero</em>, electricista o cerrajero de confianza?</h2>
+        <p class="oficios"><strong>Fontanería · Electricidad · Cerrajería · Jardinería · Pintura</strong> y 9 oficios más, cerca tuyo.</p>
+        <div class="como">
+          <div class="paso"><span class="n">1</span><span><b>Escaneá el código</b> con la cámara del cel</span></div>
+          <div class="paso"><span class="n">2</span><span><b>Elegí un profesional</b> verificado en tu zona</span></div>
+          <div class="paso"><span class="n">3</span><span><b>Escribile directo</b> por WhatsApp o llamalo</span></div>
+        </div>
+        <p class="aliado">Disponible gracias a tu ferretería <strong>El Colono</strong></p>
+      </div>
+      <div class="col-qr">
+        <span class="escanea">Escaneá aquí</span>
+        <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#000000" d="M4 4.5h7m2 0h1m1 0h1m1 0h3m1 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h1m1 0h5m6 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h4m3 0h1m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h3m1 0h3m4 0h1m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m3 0h1m1 0h1m2 0h1m6 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h1m1 0h2m1 0h3m4 0h1M5 12.5h1m1 0h4m1 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h2m1 0h2m1 0h1M4 13.5h3m2 0h1m1 0h4m7 0h2m4 0h1m1 0h2M4 14.5h1m1 0h1m1 0h1m1 0h5m2 0h2m2 0h1m3 0h3m1 0h1M6 15.5h1m6 0h5m3 0h2m1 0h1m3 0h2m2 0h1M4 16.5h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h3m4 0h2m2 0h1m1 0h1M8 17.5h2m2 0h3m2 0h1m2 0h3m3 0h1m1 0h1m1 0h1m1 0h1M4 18.5h1m4 0h5m2 0h1m3 0h1m2 0h1m3 0h1m1 0h1m2 0h1M4 19.5h1m2 0h1m1 0h1m2 0h2m1 0h6m1 0h4m2 0h3M4 20.5h3m2 0h2m1 0h1m3 0h4m4 0h1m2 0h1m1 0h1m2 0h1M4 21.5h1m2 0h2m3 0h2m2 0h1m1 0h1m1 0h4m4 0h3M4 22.5h3m1 0h4m2 0h1m2 0h3m1 0h1m1 0h2m7 0h1M4 23.5h2m1 0h1m5 0h3m1 0h1m1 0h2m2 0h1m1 0h3m2 0h1M4 24.5h2m3 0h2m1 0h2m1 0h1m4 0h2m2 0h9M12 25.5h3m1 0h2m1 0h1m1 0h2m1 0h1m3 0h3M4 26.5h7m2 0h2m2 0h1m1 0h2m2 0h2m1 0h1m1 0h1m1 0h2M4 27.5h1m5 0h1m1 0h1m3 0h3m2 0h1m1 0h2m3 0h2m1 0h2M4 28.5h1m1 0h3m1 0h1m1 0h7m1 0h1m2 0h6m3 0h1M4 29.5h1m1 0h3m1 0h1m1 0h2m4 0h3m1 0h1m4 0h1m4 0h1M4 30.5h1m1 0h3m1 0h1m3 0h2m2 0h3m1 0h1m1 0h2m1 0h2m2 0h2M4 31.5h1m5 0h1m1 0h2m1 0h1m3 0h1m5 0h2m1 0h1m1 0h1m1 0h1M4 32.5h7m4 0h1m2 0h1m4 0h2m2 0h2"/></svg></span>
+        <span class="url">breteame.com</span>
+        <span class="gratis">Gratis · Sin apps · Sin registro para buscar</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOJA 2: Flyer media carta — Coopelesca ============ -->
+  <span class="etiqueta-hoja">Hoja 2 · Flyer media carta · Almacenes Coopelesca</span>
+  <section class="hoja">
+    <div class="mitad">
+      <div class="col-copy">
+        <div class="logo">
+          <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+          <span class="nombre">Breteame</span>
+        </div>
+        <span class="chip-verificados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Profesionales verificados</span>
+        <h2>¿Ocupás un <em>fontanero</em>, electricista o cerrajero de confianza?</h2>
+        <p class="oficios"><strong>Fontanería · Electricidad · Cerrajería · Jardinería · Pintura</strong> y 9 oficios más, cerca tuyo.</p>
+        <div class="como">
+          <div class="paso"><span class="n">1</span><span><b>Escaneá el código</b> con la cámara del cel</span></div>
+          <div class="paso"><span class="n">2</span><span><b>Elegí un profesional</b> verificado en tu zona</span></div>
+          <div class="paso"><span class="n">3</span><span><b>Escribile directo</b> por WhatsApp o llamalo</span></div>
+        </div>
+        <p class="aliado">Disponible gracias a <strong>Almacenes Coopelesca</strong></p>
+      </div>
+      <div class="col-qr">
+        <span class="escanea">Escaneá aquí</span>
+        <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h41v41H0z"/><path stroke="#000000" d="M4 4.5h7m1 0h4m4 0h3m2 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h2m2 0h1m3 0h1m1 0h1m5 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h3m1 0h1m2 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m2 0h1m2 0h2m4 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h3m3 0h3m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m2 0h9m1 0h1m3 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h5m1 0h2m1 0h3m1 0h2M5 12.5h1m4 0h4m1 0h1m1 0h1m2 0h4m2 0h4m5 0h2M4 13.5h1m4 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h7m4 0h3M5 14.5h4m1 0h6m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h2M6 15.5h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h2m3 0h8M5 16.5h1m1 0h1m1 0h4m1 0h2m1 0h2m1 0h2m3 0h1m1 0h1m2 0h1M6 17.5h2m1 0h1m2 0h1m2 0h3m2 0h3m2 0h1m2 0h1m1 0h2m1 0h1m1 0h2M4 18.5h2m1 0h2m1 0h1m1 0h1m3 0h1m1 0h3m3 0h3m2 0h2m2 0h1m1 0h1M4 19.5h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m3 0h2m1 0h4m1 0h1M8 20.5h6m1 0h1m5 0h1m4 0h1m2 0h1m1 0h3m2 0h1M5 21.5h3m4 0h1m1 0h5m4 0h2m2 0h1m2 0h1m2 0h2m1 0h1M4 22.5h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h2m1 0h1m1 0h3m1 0h3m1 0h2m1 0h1M4 23.5h1m3 0h1m7 0h2m1 0h1m2 0h3m1 0h1m2 0h2m1 0h5M4 24.5h1m1 0h1m1 0h1m1 0h1m1 0h4m2 0h2m1 0h1m1 0h1m1 0h1m2 0h2m1 0h3M4 25.5h2m1 0h1m3 0h1m1 0h2m1 0h1m2 0h1m1 0h1m9 0h2m1 0h1M4 26.5h1m1 0h2m2 0h1m2 0h1m1 0h2m1 0h2m1 0h3m1 0h4m2 0h1m2 0h2M4 27.5h1m1 0h1m1 0h1m3 0h1m2 0h3m2 0h5m1 0h2m2 0h6M4 28.5h2m2 0h1m1 0h1m1 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h6m1 0h2M12 29.5h2m3 0h3m3 0h3m2 0h1m3 0h1m1 0h1m1 0h1M4 30.5h7m1 0h2m1 0h1m2 0h2m2 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h2M4 31.5h1m5 0h1m2 0h6m3 0h7m3 0h4M4 32.5h1m1 0h3m1 0h1m2 0h1m1 0h3m1 0h2m3 0h3m1 0h6m1 0h2M4 33.5h1m1 0h3m1 0h1m3 0h1m3 0h1m6 0h1m3 0h1m1 0h4m1 0h1M4 34.5h1m1 0h3m1 0h1m2 0h2m3 0h1m1 0h1m1 0h2m3 0h2m2 0h2m1 0h3M4 35.5h1m5 0h1m1 0h1m2 0h4m2 0h2m5 0h1m2 0h4M4 36.5h7m2 0h2m2 0h2m1 0h3m3 0h1m1 0h2m1 0h1m3 0h1"/></svg></span>
+        <span class="url">breteame.com</span>
+        <span class="gratis">Gratis · Sin apps · Sin registro para buscar</span>
+      </div>
+    </div>
+    <div class="mitad">
+      <span class="marca-corte">✂ cortá aquí</span>
+      <div class="col-copy">
+        <div class="logo">
+          <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+          <span class="nombre">Breteame</span>
+        </div>
+        <span class="chip-verificados"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Profesionales verificados</span>
+        <h2>¿Ocupás un <em>fontanero</em>, electricista o cerrajero de confianza?</h2>
+        <p class="oficios"><strong>Fontanería · Electricidad · Cerrajería · Jardinería · Pintura</strong> y 9 oficios más, cerca tuyo.</p>
+        <div class="como">
+          <div class="paso"><span class="n">1</span><span><b>Escaneá el código</b> con la cámara del cel</span></div>
+          <div class="paso"><span class="n">2</span><span><b>Elegí un profesional</b> verificado en tu zona</span></div>
+          <div class="paso"><span class="n">3</span><span><b>Escribile directo</b> por WhatsApp o llamalo</span></div>
+        </div>
+        <p class="aliado">Disponible gracias a <strong>Almacenes Coopelesca</strong></p>
+      </div>
+      <div class="col-qr">
+        <span class="escanea">Escaneá aquí</span>
+        <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h41v41H0z"/><path stroke="#000000" d="M4 4.5h7m1 0h4m4 0h3m2 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h2m2 0h1m3 0h1m1 0h1m5 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h3m1 0h1m2 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m2 0h1m2 0h2m4 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h3m3 0h3m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m2 0h9m1 0h1m3 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h5m1 0h2m1 0h3m1 0h2M5 12.5h1m4 0h4m1 0h1m1 0h1m2 0h4m2 0h4m5 0h2M4 13.5h1m4 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h7m4 0h3M5 14.5h4m1 0h6m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h2M6 15.5h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h2m3 0h8M5 16.5h1m1 0h1m1 0h4m1 0h2m1 0h2m1 0h2m3 0h1m1 0h1m2 0h1M6 17.5h2m1 0h1m2 0h1m2 0h3m2 0h3m2 0h1m2 0h1m1 0h2m1 0h1m1 0h2M4 18.5h2m1 0h2m1 0h1m1 0h1m3 0h1m1 0h3m3 0h3m2 0h2m2 0h1m1 0h1M4 19.5h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m3 0h2m1 0h4m1 0h1M8 20.5h6m1 0h1m5 0h1m4 0h1m2 0h1m1 0h3m2 0h1M5 21.5h3m4 0h1m1 0h5m4 0h2m2 0h1m2 0h1m2 0h2m1 0h1M4 22.5h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h2m1 0h1m1 0h3m1 0h3m1 0h2m1 0h1M4 23.5h1m3 0h1m7 0h2m1 0h1m2 0h3m1 0h1m2 0h2m1 0h5M4 24.5h1m1 0h1m1 0h1m1 0h1m1 0h4m2 0h2m1 0h1m1 0h1m1 0h1m2 0h2m1 0h3M4 25.5h2m1 0h1m3 0h1m1 0h2m1 0h1m2 0h1m1 0h1m9 0h2m1 0h1M4 26.5h1m1 0h2m2 0h1m2 0h1m1 0h2m1 0h2m1 0h3m1 0h4m2 0h1m2 0h2M4 27.5h1m1 0h1m1 0h1m3 0h1m2 0h3m2 0h5m1 0h2m2 0h6M4 28.5h2m2 0h1m1 0h1m1 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h6m1 0h2M12 29.5h2m3 0h3m3 0h3m2 0h1m3 0h1m1 0h1m1 0h1M4 30.5h7m1 0h2m1 0h1m2 0h2m2 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h2M4 31.5h1m5 0h1m2 0h6m3 0h7m3 0h4M4 32.5h1m1 0h3m1 0h1m2 0h1m1 0h3m1 0h2m3 0h3m1 0h6m1 0h2M4 33.5h1m1 0h3m1 0h1m3 0h1m3 0h1m6 0h1m3 0h1m1 0h4m1 0h1M4 34.5h1m1 0h3m1 0h1m2 0h2m3 0h1m1 0h1m1 0h2m3 0h2m2 0h2m1 0h3M4 35.5h1m5 0h1m1 0h1m2 0h4m2 0h2m5 0h1m2 0h4M4 36.5h7m2 0h2m2 0h2m1 0h3m3 0h1m1 0h2m1 0h1m3 0h1"/></svg></span>
+        <span class="url">breteame.com</span>
+        <span class="gratis">Gratis · Sin apps · Sin registro para buscar</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOJA 3: Rótulo para caja — El Colono ============ -->
+  <span class="etiqueta-hoja">Hoja 3 · Rótulo para caja o mostrador · El Colono</span>
+  <section class="hoja rotulo">
+    <div class="logo">
+      <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      <span class="nombre">Breteame</span>
+    </div>
+    <h2>¿Fontanero? ¿Electricista? <em>¿Cerrajero?</em></h2>
+    <p class="sub">Encontrá profesionales <strong>verificados</strong> cerca tuyo y contactalos directo por WhatsApp. Gratis y sin apps.</p>
+    <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37 37" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h37v37H0z"/><path stroke="#000000" d="M4 4.5h7m2 0h1m1 0h1m1 0h3m1 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h1m1 0h1m2 0h2m2 0h1m2 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h1m1 0h5m6 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m1 0h4m3 0h1m1 0h1m2 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m1 0h3m1 0h3m4 0h1m2 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m3 0h1m1 0h1m2 0h1m6 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M12 11.5h1m1 0h2m1 0h3m4 0h1M5 12.5h1m1 0h4m1 0h1m1 0h1m1 0h1m3 0h2m1 0h1m1 0h2m1 0h2m1 0h1M4 13.5h3m2 0h1m1 0h4m7 0h2m4 0h1m1 0h2M4 14.5h1m1 0h1m1 0h1m1 0h5m2 0h2m2 0h1m3 0h3m1 0h1M6 15.5h1m6 0h5m3 0h2m1 0h1m3 0h2m2 0h1M4 16.5h3m1 0h1m1 0h2m1 0h1m1 0h1m2 0h3m4 0h2m2 0h1m1 0h1M8 17.5h2m2 0h3m2 0h1m2 0h3m3 0h1m1 0h1m1 0h1m1 0h1M4 18.5h1m4 0h5m2 0h1m3 0h1m2 0h1m3 0h1m1 0h1m2 0h1M4 19.5h1m2 0h1m1 0h1m2 0h2m1 0h6m1 0h4m2 0h3M4 20.5h3m2 0h2m1 0h1m3 0h4m4 0h1m2 0h1m1 0h1m2 0h1M4 21.5h1m2 0h2m3 0h2m2 0h1m1 0h1m1 0h4m4 0h3M4 22.5h3m1 0h4m2 0h1m2 0h3m1 0h1m1 0h2m7 0h1M4 23.5h2m1 0h1m5 0h3m1 0h1m1 0h2m2 0h1m1 0h3m2 0h1M4 24.5h2m3 0h2m1 0h2m1 0h1m4 0h2m2 0h9M12 25.5h3m1 0h2m1 0h1m1 0h2m1 0h1m3 0h3M4 26.5h7m2 0h2m2 0h1m1 0h2m2 0h2m1 0h1m1 0h1m1 0h2M4 27.5h1m5 0h1m1 0h1m3 0h3m2 0h1m1 0h2m3 0h2m1 0h2M4 28.5h1m1 0h3m1 0h1m1 0h7m1 0h1m2 0h6m3 0h1M4 29.5h1m1 0h3m1 0h1m1 0h2m4 0h3m1 0h1m4 0h1m4 0h1M4 30.5h1m1 0h3m1 0h1m3 0h2m2 0h3m1 0h1m1 0h2m1 0h2m2 0h2M4 31.5h1m5 0h1m1 0h2m1 0h1m3 0h1m5 0h2m1 0h1m1 0h1m1 0h1M4 32.5h7m4 0h1m2 0h1m4 0h2m2 0h2"/></svg></span>
+    <span class="escanea-grande">Escaneá aquí</span>
+    <footer class="franja">
+      <span class="url-grande">breteame.com</span>
+      <span class="datos"><span>Aliado: El Colono</span><span>·</span><span>Gratis</span><span>·</span><span>WhatsApp directo</span></span>
+    </footer>
+  </section>
+
+  <!-- ============ HOJA 4: Rótulo para caja — Coopelesca ============ -->
+  <span class="etiqueta-hoja">Hoja 4 · Rótulo para caja o mostrador · Almacenes Coopelesca</span>
+  <section class="hoja rotulo">
+    <div class="logo">
+      <span class="cubo"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+      <span class="nombre">Breteame</span>
+    </div>
+    <h2>¿Fontanero? ¿Electricista? <em>¿Cerrajero?</em></h2>
+    <p class="sub">Encontrá profesionales <strong>verificados</strong> cerca tuyo y contactalos directo por WhatsApp. Gratis y sin apps.</p>
+    <span class="marco-qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41 41" shape-rendering="crispEdges"><path fill="#ffffff" d="M0 0h41v41H0z"/><path stroke="#000000" d="M4 4.5h7m1 0h4m4 0h3m2 0h2m3 0h7M4 5.5h1m5 0h1m1 0h1m1 0h2m2 0h1m3 0h1m1 0h1m5 0h1m5 0h1M4 6.5h1m1 0h3m1 0h1m2 0h3m1 0h1m2 0h1m2 0h4m3 0h1m1 0h3m1 0h1M4 7.5h1m1 0h3m1 0h1m2 0h1m2 0h2m4 0h3m1 0h1m1 0h1m1 0h1m1 0h3m1 0h1M4 8.5h1m1 0h3m1 0h1m2 0h1m1 0h1m2 0h3m3 0h3m3 0h1m1 0h3m1 0h1M4 9.5h1m5 0h1m2 0h9m1 0h1m3 0h2m1 0h1m5 0h1M4 10.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M13 11.5h5m1 0h2m1 0h3m1 0h2M5 12.5h1m4 0h4m1 0h1m1 0h1m2 0h4m2 0h4m5 0h2M4 13.5h1m4 0h1m2 0h1m2 0h1m1 0h1m1 0h1m1 0h7m4 0h3M5 14.5h4m1 0h6m1 0h3m1 0h1m2 0h1m1 0h1m1 0h1m3 0h1m1 0h2M6 15.5h1m1 0h1m2 0h2m1 0h1m1 0h1m1 0h1m1 0h3m1 0h2m3 0h8M5 16.5h1m1 0h1m1 0h4m1 0h2m1 0h2m1 0h2m3 0h1m1 0h1m2 0h1M6 17.5h2m1 0h1m2 0h1m2 0h3m2 0h3m2 0h1m2 0h1m1 0h2m1 0h1m1 0h2M4 18.5h2m1 0h2m1 0h1m1 0h1m3 0h1m1 0h3m3 0h3m2 0h2m2 0h1m1 0h1M4 19.5h1m2 0h1m1 0h1m1 0h1m1 0h1m1 0h1m4 0h1m1 0h1m1 0h1m3 0h2m1 0h4m1 0h1M8 20.5h6m1 0h1m5 0h1m4 0h1m2 0h1m1 0h3m2 0h1M5 21.5h3m4 0h1m1 0h5m4 0h2m2 0h1m2 0h1m2 0h2m1 0h1M4 22.5h1m1 0h1m1 0h1m1 0h2m4 0h1m3 0h2m1 0h1m1 0h3m1 0h3m1 0h2m1 0h1M4 23.5h1m3 0h1m7 0h2m1 0h1m2 0h3m1 0h1m2 0h2m1 0h5M4 24.5h1m1 0h1m1 0h1m1 0h1m1 0h4m2 0h2m1 0h1m1 0h1m1 0h1m2 0h2m1 0h3M4 25.5h2m1 0h1m3 0h1m1 0h2m1 0h1m2 0h1m1 0h1m9 0h2m1 0h1M4 26.5h1m1 0h2m2 0h1m2 0h1m1 0h2m1 0h2m1 0h3m1 0h4m2 0h1m2 0h2M4 27.5h1m1 0h1m1 0h1m3 0h1m2 0h3m2 0h5m1 0h2m2 0h6M4 28.5h2m2 0h1m1 0h1m1 0h1m3 0h1m1 0h1m5 0h1m1 0h1m1 0h6m1 0h2M12 29.5h2m3 0h3m3 0h3m2 0h1m3 0h1m1 0h1m1 0h1M4 30.5h7m1 0h2m1 0h1m2 0h2m2 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h2M4 31.5h1m5 0h1m2 0h6m3 0h7m3 0h4M4 32.5h1m1 0h3m1 0h1m2 0h1m1 0h3m1 0h2m3 0h3m1 0h6m1 0h2M4 33.5h1m1 0h3m1 0h1m3 0h1m3 0h1m6 0h1m3 0h1m1 0h4m1 0h1M4 34.5h1m1 0h3m1 0h1m2 0h2m3 0h1m1 0h1m1 0h2m3 0h2m2 0h2m1 0h3M4 35.5h1m5 0h1m1 0h1m2 0h4m2 0h2m5 0h1m2 0h4M4 36.5h7m2 0h2m2 0h2m1 0h3m3 0h1m1 0h2m1 0h1m3 0h1"/></svg></span>
+    <span class="escanea-grande">Escaneá aquí</span>
+    <footer class="franja">
+      <span class="url-grande">breteame.com</span>
+      <span class="datos"><span>Aliado: Coopelesca</span><span>·</span><span>Gratis</span><span>·</span><span>WhatsApp directo</span></span>
+    </footer>
+  </section>
+
+</div>
+</body>
+</html>
