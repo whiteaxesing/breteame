@@ -51,3 +51,6 @@ next-env.d.ts
 /presentacion/shots/
 /presentacion/preview/
 /presentacion/*.pdf
+
+# Imágenes de Instagram (regenerables con scripts/instagram.mjs)
+/instagram/
