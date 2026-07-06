@@ -508,6 +508,70 @@ export async function registrarProfesionalConCuenta(input: {
 }
 
 /**
+ * Completa el registro de un profesional que se autenticó con Google.
+ * El usuario ya existe en auth.users y profiles; esta acción crea su anuncio
+ * y actualiza su rol a 'profesional'.
+ */
+export async function completarRegistroProfesionalGoogle(input: {
+  name: string;
+  phone: string;
+  category: CategorySlug;
+  extraCategories: CategorySlug[];
+  location: string;
+  description: string;
+  lat?: number | null;
+  lng?: number | null;
+}): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Tenés que iniciar sesión." };
+
+  const name = input.name.trim();
+  const phone = input.phone.trim();
+
+  if (!name) return { ok: false, error: "El nombre es obligatorio." };
+  if (!esTelefonoCRValido(phone)) return { ok: false, error: "Ingresá un teléfono válido de 8 dígitos." };
+  if (!isCategorySlug(input.category)) return { ok: false, error: "Seleccioná un oficio válido." };
+  if (excedeLimite(name, LIMITES.nombre)) return { ok: false, error: `El nombre no puede superar ${LIMITES.nombre} caracteres.` };
+  if (excedeLimite(input.location, LIMITES.ubicacion)) return { ok: false, error: `La ubicación no puede superar ${LIMITES.ubicacion} caracteres.` };
+  if (excedeLimite(input.description, LIMITES.descripcion)) return { ok: false, error: `La descripción no puede superar ${LIMITES.descripcion} caracteres.` };
+
+  const admin = createAdminClient();
+
+  const { data: existingPhone } = await admin
+    .from("professionals")
+    .select("id")
+    .eq("phone", phone)
+    .limit(1)
+    .single();
+  if (existingPhone) return { ok: false, error: "Ese número de teléfono ya está registrado." };
+
+  const { data: existingPro } = await admin
+    .from("professionals")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (existingPro) return { ok: false, error: "Ya tenés un anuncio de profesional." };
+
+  await admin.from("profiles").update({ role: "profesional", full_name: name }).eq("id", user.id);
+
+  const { error } = await admin.from("professionals").insert({
+    user_id: user.id,
+    name,
+    phone,
+    category: input.category,
+    extra_categories: input.extraCategories.filter((s) => s !== input.category),
+    location: input.location.trim(),
+    description: input.description.trim() || null,
+    ...(input.lat != null && input.lng != null ? { lat: input.lat, lng: input.lng } : {}),
+  });
+
+  if (error) return falla(error, "completarRegistroProfesionalGoogle:insert");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
+
+/**
  * Dashboard del profesional: actualiza los datos de su anuncio público.
  * No recibe el id del cliente: actualiza la fila cuyo user_id es el del usuario
  * autenticado (RLS professionals_update_own lo garantiza), así nadie puede

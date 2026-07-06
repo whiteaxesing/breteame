@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -18,12 +20,59 @@ import { CATEGORIES } from "@/lib/categories";
 import { registrarProfesionalConCuenta } from "@/lib/actions";
 import { ExtraCategoriasSelector } from "@/components/extra-categorias-selector";
 import { LocationSelector } from "@/components/location-selector";
+import { createClient } from "@/lib/supabase/client";
 import type { CategorySlug } from "@/lib/types";
+
+async function generateNonce(): Promise<[string, string]> {
+  const raw = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+  const hashed = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return [raw, hashed];
+}
 
 export function UnirseCuentaForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.google) initGoogleButton();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function initGoogleButton() {
+    if (!window.google || !googleButtonRef.current) return;
+    const [nonce, hashedNonce] = await generateNonce();
+    window.google.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      nonce: hashedNonce,
+      callback: async (response) => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: response.credential,
+          nonce,
+        });
+        if (error) {
+          setError("No se pudo continuar con Google.");
+          return;
+        }
+        router.push("/unirse/completar");
+        router.refresh();
+      },
+    });
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "signup_with",
+      shape: "rectangular",
+      width: googleButtonRef.current.clientWidth || 480,
+    });
+  }
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -68,6 +117,20 @@ export function UnirseCuentaForm() {
   }
 
   return (
+    <div className="space-y-5">
+      <Script
+        src="https://accounts.google.com/gsi/client"
+        strategy="afterInteractive"
+        onLoad={initGoogleButton}
+      />
+      <div ref={googleButtonRef} className="flex w-full justify-center" />
+
+      <div className="flex items-center gap-3">
+        <Separator className="flex-1" />
+        <span className="text-xs text-muted-foreground">o con correo y contraseña</span>
+        <Separator className="flex-1" />
+      </div>
+
     <form onSubmit={handleSubmit} className="space-y-5">
       <input
         type="text"
@@ -205,5 +268,6 @@ export function UnirseCuentaForm() {
         de que aparezca en las búsquedas.
       </p>
     </form>
+    </div>
   );
 }
