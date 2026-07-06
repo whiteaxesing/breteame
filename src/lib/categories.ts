@@ -12,6 +12,7 @@ import {
   Waves,
   CloudRain,
   HardHat,
+  Cylinder,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -149,6 +150,15 @@ export const CATEGORIES: Category[] = [
     chip: "bg-yellow-100 text-yellow-800",
     solid: "bg-yellow-600",
     accent: "text-yellow-700",
+  },
+  {
+    slug: "tanques_septicos",
+    label: "Tanques sépticos",
+    tagline: "Instalación, limpieza y mantenimiento",
+    icon: Cylinder,
+    chip: "bg-lime-100 text-lime-800",
+    solid: "bg-lime-700",
+    accent: "text-lime-700",
   },
 ];
 
