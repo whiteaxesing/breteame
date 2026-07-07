@@ -13,6 +13,8 @@ import {
   CloudRain,
   HardHat,
   Cylinder,
+  Container,
+  Boxes,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -159,6 +161,24 @@ export const CATEGORIES: Category[] = [
     chip: "bg-lime-100 text-lime-800",
     solid: "bg-lime-700",
     accent: "text-lime-700",
+  },
+  {
+    slug: "transporte_material",
+    label: "Transporte de material",
+    tagline: "Arena, piedra, block y madera hasta la obra",
+    icon: Container,
+    chip: "bg-indigo-100 text-indigo-700",
+    solid: "bg-indigo-600",
+    accent: "text-indigo-600",
+  },
+  {
+    slug: "mudanzas",
+    label: "Mudanzas",
+    tagline: "Traslados de casa, apartamento y oficina",
+    icon: Boxes,
+    chip: "bg-fuchsia-100 text-fuchsia-700",
+    solid: "bg-fuchsia-600",
+    accent: "text-fuchsia-700",
   },
 ];
 

@@ -15,7 +15,9 @@ export type CategorySlug =
   | "piscinas"
   | "hojalateria"
   | "maestro_obra"
-  | "tanques_septicos";
+  | "tanques_septicos"
+  | "transporte_material"
+  | "mudanzas";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 
