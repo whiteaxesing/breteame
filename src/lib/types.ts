@@ -17,7 +17,8 @@ export type CategorySlug =
   | "maestro_obra"
   | "tanques_septicos"
   | "transporte_material"
-  | "mudanzas";
+  | "mudanzas"
+  | "hidrolavado";
 export type ContactChannel = "whatsapp" | "llamada" | "copiar";
 export type ContactStatus = "nuevo" | "contactado" | "cerrado";
 

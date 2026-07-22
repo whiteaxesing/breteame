@@ -15,6 +15,7 @@ import {
   Cylinder,
   Container,
   Boxes,
+  Droplets,
   type LucideIcon,
 } from "lucide-react";
 import type { CategorySlug } from "@/lib/types";
@@ -179,6 +180,15 @@ export const CATEGORIES: Category[] = [
     chip: "bg-fuchsia-100 text-fuchsia-700",
     solid: "bg-fuchsia-600",
     accent: "text-fuchsia-700",
+  },
+  {
+    slug: "hidrolavado",
+    label: "Hidrolavado",
+    tagline: "Fachadas, pisos, vehículos y más",
+    icon: Droplets,
+    chip: "bg-cyan-100 text-cyan-700",
+    solid: "bg-cyan-600",
+    accent: "text-cyan-600",
   },
 ];
 

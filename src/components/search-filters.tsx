@@ -170,6 +170,19 @@ export function SearchFilters({
         </div>
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        ¿No encontrás tu categoría?{" "}
+        <a
+          href="https://wa.me/50686787558"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline-offset-2 hover:underline"
+        >
+          Escribinos por WhatsApp
+        </a>{" "}
+        y te ayudamos.
+      </p>
+
       <div className="flex flex-wrap gap-2 border-t pt-3">
         <button
           type="button"
