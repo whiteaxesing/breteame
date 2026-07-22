@@ -173,7 +173,7 @@ export function SearchFilters({
       <p className="text-xs text-muted-foreground">
         ¿No encontrás tu categoría?{" "}
         <a
-          href="https://wa.me/50686787558"
+          href="https://wa.me/50686787558?text=Hola%2C%20estoy%20buscando%20un%20profesional%20en%20Breteame%20pero%20no%20encuentro%20la%20categor%C3%ADa%20que%20necesito.%20%C2%BFMe%20pod%C3%A9s%20ayudar%3F"
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-primary underline-offset-2 hover:underline"
